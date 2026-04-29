@@ -523,12 +523,17 @@ create policy "packet access by owner psychu or active share"
 on public.triage_packets for select
 using (
   public.is_psychu_staff()
-  or exists (select 1 from public.cases c where c.id = case_id and c.student_user_id = auth.uid())
+  or exists (
+    select 1
+    from public.cases c
+    where c.id = public.triage_packets.case_id
+      and c.student_user_id = auth.uid()
+  )
   or exists (
     select 1
     from public.share_grants sg
     join public.memberships m on m.organization_id = sg.organization_id
-    where sg.packet_id = id
+    where sg.packet_id = public.triage_packets.id
       and sg.status = 'active'
       and (sg.expires_at is null or sg.expires_at > now())
       and m.user_id = auth.uid()
