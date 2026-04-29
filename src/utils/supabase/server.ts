@@ -1,17 +1,16 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { env, getSupabasePublishableKey } from "@/lib/env";
 
-export async function createSupabaseServerClient() {
-  const supabaseKey = getSupabasePublishableKey();
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseKey =
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  if (!env.NEXT_PUBLIC_SUPABASE_URL || !supabaseKey) {
+export const createClient = (cookieStore: Awaited<ReturnType<typeof cookies>>) => {
+  if (!supabaseUrl || !supabaseKey) {
     throw new Error("Supabase server client requested before Supabase environment variables were configured.");
   }
 
-  const cookieStore = await cookies();
-
-  return createServerClient(env.NEXT_PUBLIC_SUPABASE_URL, supabaseKey, {
+  return createServerClient(supabaseUrl, supabaseKey, {
     cookies: {
       getAll() {
         return cookieStore.getAll();
@@ -20,9 +19,9 @@ export async function createSupabaseServerClient() {
         try {
           cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options));
         } catch {
-          // Server Components cannot set cookies; Server Actions and Route Handlers can.
+          // Server Components cannot set cookies; middleware refreshes user sessions.
         }
       }
     }
   });
-}
+};
