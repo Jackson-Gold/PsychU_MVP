@@ -1,8 +1,6 @@
 import {
   type AITriageRun,
-  type AssessmentModule,
   type AssessmentResponse,
-  crisisResourceCopy,
   type ClinicianReview,
   type ConsentVersion,
   type Invite,
@@ -16,6 +14,7 @@ import {
   type UploadedDocument,
   type User
 } from "@/lib/domain";
+import { assessmentCatalog } from "@/lib/assessment-catalog";
 import {
   buildTriagePacket,
   detectRiskFlags,
@@ -62,6 +61,12 @@ export const demoUsers: User[] = [
     email: "accessibility@upenn.edu",
     fullName: "Jordan Brooks",
     createdAt: now
+  },
+  {
+    id: "user_psychu_admin",
+    email: "admin@example.com",
+    fullName: "Avery Morgan",
+    createdAt: now
   }
 ];
 
@@ -85,6 +90,13 @@ export const demoMemberships: Membership[] = [
     userId: "user_accessibility_admin",
     organizationId: "org_penn_access",
     role: "university_admin",
+    createdAt: now
+  },
+  {
+    id: "mem_admin_avery",
+    userId: "user_psychu_admin",
+    organizationId: "org_psychu",
+    role: "psychu_admin",
     createdAt: now
   }
 ];
@@ -149,120 +161,7 @@ export const demoStudentProfile: StudentProfile = {
   updatedAt: now
 };
 
-export const demoAssessmentModules: AssessmentModule[] = [
-  {
-    id: "module_attention_exec_v1",
-    slug: "attention-executive-function-custom",
-    title: "Attention and Executive Function Screener",
-    version: "1.0.0",
-    status: "active",
-    licenseStatus: "custom",
-    domains: ["attention", "executive_function", "academic_functioning"],
-    scoringStrategy: "average_scale",
-    createdAt: now,
-    questions: [
-      {
-        id: "attention_followthrough",
-        label: "How often do you have trouble following through on reading, assignments, or exam preparation?",
-        type: "scale_0_4",
-        required: true,
-        helpText: "0 means never; 4 means almost always."
-      },
-      {
-        id: "attention_focus",
-        label: "How often do you lose focus during classes, exams, or independent work?",
-        type: "scale_0_4",
-        required: true
-      },
-      {
-        id: "attention_time",
-        label: "How often do you underestimate time needed for academic tasks?",
-        type: "scale_0_4",
-        required: true
-      },
-      {
-        id: "attention_impairment",
-        label: "Describe one recent academic situation where these difficulties affected your performance.",
-        type: "text",
-        required: true
-      }
-    ]
-  },
-  {
-    id: "module_mood_anxiety_v1",
-    slug: "mood-anxiety-safety-custom",
-    title: "Mood, Anxiety, and Safety Screener",
-    version: "1.0.0",
-    status: "active",
-    licenseStatus: "custom",
-    domains: ["mood", "anxiety", "safety"],
-    scoringStrategy: "average_scale",
-    createdAt: now,
-    questions: [
-      {
-        id: "anxiety_exam",
-        label: "How often does anxiety interfere with tests, presentations, or deadlines?",
-        type: "scale_0_4",
-        required: true
-      },
-      {
-        id: "mood_energy",
-        label: "How often do low mood, energy, or motivation interfere with coursework?",
-        type: "scale_0_4",
-        required: true
-      },
-      {
-        id: "safety_self_harm",
-        label: "Are you currently worried you may hurt yourself or someone else?",
-        type: "boolean",
-        required: true,
-        riskTrigger: {
-          equals: true,
-          severity: "critical",
-          message: crisisResourceCopy
-        }
-      },
-      {
-        id: "mood_context",
-        label: "Briefly describe any current mood or anxiety concerns you want the reviewer to understand.",
-        type: "text",
-        required: false
-      }
-    ]
-  },
-  {
-    id: "module_history_docs_v1",
-    slug: "academic-history-documentation-custom",
-    title: "Academic History and Documentation",
-    version: "1.0.0",
-    status: "active",
-    licenseStatus: "custom",
-    domains: ["academic_history", "prior_supports", "documentation"],
-    scoringStrategy: "manual_review",
-    createdAt: now,
-    questions: [
-      {
-        id: "history_prior_eval",
-        label: "Have you ever received a psychoeducational, neuropsychological, or medical evaluation?",
-        type: "boolean",
-        required: true
-      },
-      {
-        id: "history_supports",
-        label: "Which supports have you used before?",
-        type: "multi_select",
-        required: false,
-        options: ["Extended time", "Separate room", "Note-taking support", "Reduced course load", "Other"]
-      },
-      {
-        id: "history_goal",
-        label: "What are you hoping PsychU can help clarify?",
-        type: "text",
-        required: true
-      }
-    ]
-  }
-];
+export const demoAssessmentModules = assessmentCatalog;
 
 export const demoCase: PsychuCase = {
   id: "case_maya_001",
@@ -280,41 +179,56 @@ export const demoCase: PsychuCase = {
 
 export const demoAssessmentResponses: AssessmentResponse[] = [
   {
-    id: "response_attention_maya",
+    id: "response_phq9_maya",
     caseId: demoCase.id,
-    moduleId: "module_attention_exec_v1",
+    moduleId: "00000000-0000-0000-0000-000000000110",
     moduleVersion: "1.0.0",
     answers: {
-      attention_followthrough: 3,
-      attention_focus: 3,
-      attention_time: 4,
-      attention_impairment:
-        "I often need twice as long as classmates to finish exams and lose my place on long problem sets."
+      phq9_1: 1,
+      phq9_2: 1,
+      phq9_3: 2,
+      phq9_4: 2,
+      phq9_5: 0,
+      phq9_6: 1,
+      phq9_7: 2,
+      phq9_8: 0,
+      phq9_9: 0,
+      phq9_difficulty: "Somewhat difficult"
     },
     completedAt: "2026-04-28T19:20:00.000Z"
   },
   {
-    id: "response_mood_maya",
+    id: "response_gad7_maya",
     caseId: demoCase.id,
-    moduleId: "module_mood_anxiety_v1",
+    moduleId: "00000000-0000-0000-0000-000000000111",
     moduleVersion: "1.0.0",
     answers: {
-      anxiety_exam: 2,
-      mood_energy: 1,
-      safety_self_harm: false,
-      mood_context: "Anxiety spikes before exams but does not feel like the main issue."
+      gad7_1: 2,
+      gad7_2: 1,
+      gad7_3: 2,
+      gad7_4: 1,
+      gad7_5: 0,
+      gad7_6: 1,
+      gad7_7: 1,
+      gad7_difficulty: "Somewhat difficult"
     },
     completedAt: "2026-04-28T19:28:00.000Z"
   },
   {
-    id: "response_history_maya",
+    id: "response_intake_maya",
     caseId: demoCase.id,
-    moduleId: "module_history_docs_v1",
-    moduleVersion: "1.0.0",
+    moduleId: "00000000-0000-0000-0000-000000000112",
+    moduleVersion: "2026-05-25",
     answers: {
-      history_prior_eval: true,
-      history_supports: ["Extended time", "Separate room"],
-      history_goal: "I want to know whether updated documentation is needed for college accommodations."
+      referral_source: "Pilot university accessibility office",
+      full_name: "Maya Chen",
+      present_concerns:
+        "I often need twice as long as classmates to finish exams and lose my place on long problem sets.",
+      evaluation_goals: "I want to know whether updated documentation is needed for college accommodations.",
+      prior_neuropsych_eval: true,
+      prior_neuropsych_eval_details: "I completed an evaluation in high school and received extended time.",
+      current_college_accommodations: false,
+      current_college_accommodations_details: "I am seeking accommodations for timed exams."
     },
     completedAt: "2026-04-28T19:34:00.000Z"
   }

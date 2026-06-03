@@ -44,7 +44,7 @@ export default function HomePage() {
             <article>
               <span>Screeners</span>
               <strong>{demoAssessmentModules.length}</strong>
-              <small>License-safe modules</small>
+              <small>MVP questionnaire catalog</small>
             </article>
             <article>
               <span>Retention</span>
@@ -122,12 +122,12 @@ export default function HomePage() {
               <td>Clinician review</td>
               <td>Case assigned to PsychU clinician</td>
               <td>
-                <Link href={`/clinician/cases/${demoCase.id}`}>Review case</Link>
+                <Link href="/clinician/queue">Open assigned queue</Link>
               </td>
             </tr>
             <tr>
               <td>Assessment catalog</td>
-              <td>License-gated custom modules</td>
+              <td>Intake, PHQ-9, and GAD-7 with license review flags</td>
               <td>
                 <Link href="/admin/forms">Admin forms</Link>
               </td>

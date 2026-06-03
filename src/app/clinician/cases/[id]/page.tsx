@@ -1,26 +1,58 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
+import { ClinicianReviewForm } from "@/components/clinician-review-form";
 import { StatusBadge } from "@/components/status-badge";
-import { TriagePacketCard } from "@/components/triage-packet-card";
+import { requireRoles } from "@/lib/auth";
 import {
-  demoAiRun,
-  demoCase,
-  demoClinicianReview,
-  demoPacket,
-  demoRiskFlags,
-  demoScores,
-  demoStudentProfile,
-  demoUploadedDocuments
-} from "@/lib/demo-data";
+  formatAnswer,
+  mapAssessmentModule,
+  mapAssessmentResponse,
+  mapCase,
+  mapClinicianReview,
+  mapRiskFlag,
+  mapScore,
+  mapStudentProfile
+} from "@/lib/data";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 type ClinicianCasePageProps = {
   params: Promise<{ id: string }>;
 };
 
 export default async function ClinicianCasePage({ params }: ClinicianCasePageProps) {
+  await requireRoles(["psychu_clinician", "psychu_admin"]);
   const { id } = await params;
-  if (id !== demoCase.id) notFound();
+  const supabase = await createSupabaseServerClient();
+
+  const { data: caseRow } = await supabase.from("cases").select("*").eq("id", id).maybeSingle();
+  if (!caseRow) notFound();
+
+  const caseRecord = mapCase(caseRow);
+  const [
+    { data: profileRow },
+    { data: moduleRows },
+    { data: responseRows },
+    { data: scoreRows },
+    { data: riskRows },
+    { data: documentRows },
+    { data: reviewRows }
+  ] = await Promise.all([
+    supabase.from("student_profiles").select("*").eq("user_id", caseRecord.studentUserId).maybeSingle(),
+    supabase.from("assessment_modules").select("*").order("created_at"),
+    supabase.from("assessment_responses").select("*").eq("case_id", id).order("completed_at"),
+    supabase.from("scores").select("*").eq("case_id", id).order("created_at"),
+    supabase.from("risk_flags").select("*").eq("case_id", id).order("created_at", { ascending: false }),
+    supabase.from("uploaded_documents").select("*").eq("case_id", id).order("created_at"),
+    supabase.from("clinician_reviews").select("*").eq("case_id", id).order("updated_at", { ascending: false })
+  ]);
+
+  const profile = profileRow ? mapStudentProfile(profileRow) : null;
+  const modules = (moduleRows ?? []).map(mapAssessmentModule);
+  const responses = (responseRows ?? []).map(mapAssessmentResponse);
+  const scores = (scoreRows ?? []).map(mapScore);
+  const riskFlags = (riskRows ?? []).map(mapRiskFlag);
+  const review = reviewRows?.[0] ? mapClinicianReview(reviewRows[0]) : null;
+  const moduleById = new Map(modules.map((module) => [module.id, module]));
 
   return (
     <AppShell active="/clinician/queue">
@@ -28,33 +60,40 @@ export default async function ClinicianCasePage({ params }: ClinicianCasePagePro
         <div className="panel-header">
           <div>
             <p className="eyebrow">Clinician Review</p>
-            <h1 id="review-title">{demoStudentProfile.preferredName}&apos;s case</h1>
+            <h1 id="review-title">{profile?.preferredName ?? "Student"}&apos;s case</h1>
           </div>
-          <StatusBadge value={demoCase.status} />
+          <StatusBadge value={caseRecord.status} />
         </div>
 
         <div className="grid-two">
           <article>
             <h2>Case summary</h2>
-            <p>{demoCase.currentSummary}</p>
+            <p>{caseRecord.currentSummary}</p>
             <ul className="clean-list">
               <li>
-                <strong>Assigned reviewer</strong>
-                <span>{demoClinicianReview.reviewerUserId}</span>
+                <strong>Submitted</strong>
+                <span>{caseRecord.submittedAt ? new Date(caseRecord.submittedAt).toLocaleString() : "Not recorded"}</span>
               </li>
               <li>
-                <strong>Submitted</strong>
-                <span>{demoCase.submittedAt}</span>
+                <strong>Assigned clinician ID</strong>
+                <span>{caseRecord.assignedClinicianUserId ?? "Unassigned"}</span>
               </li>
             </ul>
           </article>
           <article>
-            <h2>Advisory AI triage</h2>
-            <StatusBadge value={demoAiRun.output.priority} />
-            <p>{demoAiRun.output.rationale}</p>
-            <p className="legal-copy">
-              AI output is advisory only. Deterministic safety rules and licensed clinician judgment override it.
-            </p>
+            <h2>Documents</h2>
+            {documentRows?.length ? (
+              <ul className="clean-list">
+                {documentRows.map((document) => (
+                  <li key={document.id}>
+                    <strong>{document.file_name}</strong>
+                    <span>{String(document.category).replaceAll("_", " ")}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>No documents have been uploaded.</p>
+            )}
           </article>
         </div>
       </section>
@@ -62,25 +101,36 @@ export default async function ClinicianCasePage({ params }: ClinicianCasePagePro
       <section className="grid-two">
         <article className="panel">
           <p className="eyebrow">Scores</p>
-          <h2>Screening results</h2>
-          <ul className="clean-list">
-            {demoScores.map((score) => (
-              <li key={score.id}>
-                <strong>
-                  {score.label} <StatusBadge value={score.severity} tone={score.severity === "significant" ? "warn" : "info"} />
-                </strong>
-                <span>{score.summary}</span>
-              </li>
-            ))}
-          </ul>
+          <h2>Questionnaire results</h2>
+          {scores.length ? (
+            <ul className="clean-list">
+              {scores.map((score) => (
+                <li key={score.id}>
+                  <strong>
+                    {score.label}{" "}
+                    <StatusBadge
+                      value={score.severity}
+                      tone={["moderately_severe", "severe", "significant"].includes(score.severity) ? "warn" : "info"}
+                    />
+                  </strong>
+                  <span>
+                    {score.value}
+                    {score.maxValue ? ` / ${score.maxValue}` : ""}. {score.summary}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>No scores are available yet.</p>
+          )}
         </article>
 
         <article className="panel">
           <p className="eyebrow">Risk Protocol</p>
           <h2>Safety flags</h2>
-          {demoRiskFlags.length ? (
+          {riskFlags.length ? (
             <ul className="clean-list">
-              {demoRiskFlags.map((flag) => (
+              {riskFlags.map((flag) => (
                 <li key={flag.id}>
                   <strong>
                     <StatusBadge value={flag.severity} /> {flag.source.replaceAll("_", " ")}
@@ -90,50 +140,53 @@ export default async function ClinicianCasePage({ params }: ClinicianCasePagePro
               ))}
             </ul>
           ) : (
-            <p>No deterministic crisis flag is present in this demo case.</p>
+            <p>No deterministic safety flag is present.</p>
           )}
         </article>
+      </section>
+
+      <section className="panel" aria-labelledby="responses-title">
+        <div className="panel-header">
+          <div>
+            <p className="eyebrow">Submitted Answers</p>
+            <h2 id="responses-title">Questionnaire responses</h2>
+          </div>
+          <StatusBadge value={`${responses.length} modules`} tone="info" />
+        </div>
+
+        <div className="response-stack">
+          {responses.map((response) => {
+            const assessmentModule = moduleById.get(response.moduleId);
+            return (
+              <details className="response-module" key={response.id}>
+                <summary>
+                  <strong>{assessmentModule?.title ?? response.moduleId}</strong>
+                  <span>{new Date(response.completedAt).toLocaleString()}</span>
+                </summary>
+                <dl className="answer-list">
+                  {assessmentModule?.questions.map((question) => (
+                    <div key={question.id}>
+                      <dt>{question.label}</dt>
+                      <dd>{formatAnswer(response.answers[question.id])}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </details>
+            );
+          })}
+        </div>
       </section>
 
       <section className="panel" aria-labelledby="review-actions-title">
         <div className="panel-header">
           <div>
             <p className="eyebrow">Reviewer Decision</p>
-            <h2 id="review-actions-title">Approve packet or request more information</h2>
+            <h2 id="review-actions-title">Notes, outcome, and status</h2>
           </div>
-          <StatusBadge value={demoClinicianReview.outcome} tone="good" />
+          <StatusBadge value={review?.outcome ?? "draft"} tone="good" />
         </div>
-        <div className="grid-two">
-          <div>
-            <h3>Reviewer notes</h3>
-            <p>{demoClinicianReview.reviewerNotes}</p>
-          </div>
-          <div>
-            <h3>Documents reviewed</h3>
-            <ul className="clean-list">
-              {demoUploadedDocuments.map((document) => (
-                <li key={document.id}>
-                  <strong>{document.fileName}</strong>
-                  <span>{document.category.replaceAll("_", " ")}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-        <div className="hero-actions">
-          <button className="button button-primary" type="button">
-            Approve packet
-          </button>
-          <button className="button button-secondary" type="button">
-            Request more documents
-          </button>
-          <Link className="button button-secondary" href="/student/share">
-            View student sharing
-          </Link>
-        </div>
+        <ClinicianReviewForm caseRecord={caseRecord} review={review} />
       </section>
-
-      <TriagePacketCard packet={demoPacket} audience="clinician" />
     </AppShell>
   );
 }

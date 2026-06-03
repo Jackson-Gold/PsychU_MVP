@@ -114,16 +114,50 @@ export type PsychuCase = {
 export type AssessmentQuestion = {
   id: string;
   label: string;
+  section?: string;
   helpText?: string;
-  type: "scale_0_4" | "boolean" | "text" | "multi_select";
+  placeholder?: string;
+  type:
+    | "scale_0_4"
+    | "scale_0_3"
+    | "boolean"
+    | "text"
+    | "multi_select"
+    | "single_select"
+    | "date"
+    | "email"
+    | "tel"
+    | "number";
   required: boolean;
   options?: string[];
+  showWhen?: {
+    questionId: string;
+    equals?: string | boolean | number;
+    notEquals?: string | boolean | number;
+  };
   riskTrigger?: {
     equals?: string | boolean | number;
     includes?: string;
+    minimum?: number;
     severity: RiskSeverity;
     message: string;
   };
+};
+
+export type ScoreSeverity =
+  | "minimal"
+  | "mild"
+  | "moderate"
+  | "moderately_severe"
+  | "significant"
+  | "severe"
+  | "review_required";
+
+export type ScoreRange = {
+  min: number;
+  max: number;
+  severity: ScoreSeverity;
+  interpretation: string;
 };
 
 export type AssessmentModule = {
@@ -134,7 +168,15 @@ export type AssessmentModule = {
   status: "draft" | "active" | "retired";
   licenseStatus: "custom" | "public_domain_verified" | "licensed_pending" | "licensed_verified";
   domains: string[];
-  scoringStrategy: "average_scale" | "manual_review";
+  description?: string;
+  attribution?: string;
+  estimatedMinutes?: number;
+  scoringStrategy: "average_scale" | "sum_scale" | "manual_review";
+  scoringConfig?: {
+    label: string;
+    maxValue: number;
+    ranges: ScoreRange[];
+  };
   questions: AssessmentQuestion[];
   createdAt: string;
 };
@@ -154,7 +196,9 @@ export type Score = {
   moduleId: string;
   label: string;
   value: number;
-  severity: "minimal" | "mild" | "moderate" | "significant" | "review_required";
+  maxValue?: number;
+  severity: ScoreSeverity;
+  interpretation?: string;
   summary: string;
   createdAt: string;
 };

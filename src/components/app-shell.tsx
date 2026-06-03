@@ -1,20 +1,18 @@
 import Link from "next/link";
 import { DemoModeNotice } from "@/components/demo-mode-notice";
-
-const navItems = [
-  { href: "/", label: "Overview" },
-  { href: "/student", label: "Student" },
-  { href: "/clinician/queue", label: "Clinician" },
-  { href: "/university/invites", label: "University" },
-  { href: "/admin/forms", label: "Admin" }
-];
+import { signOut } from "@/app/auth/actions";
+import { getAuthContext } from "@/lib/auth";
+import type { Role } from "@/lib/domain";
 
 type AppShellProps = {
   children: React.ReactNode;
   active?: string;
 };
 
-export function AppShell({ children, active }: AppShellProps) {
+export async function AppShell({ children, active }: AppShellProps) {
+  const context = await getAuthContext();
+  const navItems = navigationForRoles(context?.roles ?? []);
+
   return (
     <div className="app-frame">
       <a className="skip-link" href="#main-content">
@@ -43,6 +41,15 @@ export function AppShell({ children, active }: AppShellProps) {
                 </Link>
               </li>
             ))}
+            {context ? (
+              <li>
+                <form action={signOut}>
+                  <button className="nav-link nav-button" type="submit">
+                    Sign out
+                  </button>
+                </form>
+              </li>
+            ) : null}
           </ul>
         </nav>
       </header>
@@ -52,4 +59,36 @@ export function AppShell({ children, active }: AppShellProps) {
       </main>
     </div>
   );
+}
+
+function navigationForRoles(roles: Role[]) {
+  const items = [{ href: "/", label: "Overview" }];
+
+  if (roles.includes("student")) {
+    items.push(
+      { href: "/student", label: "Student" },
+      { href: "/student/case", label: "Questionnaires" },
+      { href: "/student/share", label: "Sharing" }
+    );
+  }
+
+  if (roles.includes("psychu_clinician") || roles.includes("psychu_admin")) {
+    items.push({ href: "/clinician/queue", label: "Clinician" });
+  }
+
+  if (roles.includes("psychu_admin")) {
+    items.push({ href: "/admin/forms", label: "Admin" });
+  }
+
+  if (roles.includes("university_admin")) {
+    items.push({ href: "/university/invites", label: "University" });
+  } else if (roles.includes("university_staff")) {
+    items.push({ href: "/university/shared-packets", label: "University" });
+  }
+
+  if (!roles.length) {
+    items.push({ href: "/auth", label: "Sign in" });
+  }
+
+  return items;
 }

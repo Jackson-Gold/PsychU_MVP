@@ -16,6 +16,14 @@ This document records the product and technical decisions made while converting 
 - All scoring is decision support for PsychU clinicians. AI and automated scoring never create student-facing clinical conclusions without reviewer approval.
 - Triage packet language must remain non-diagnostic and should describe functional impact, documentation received, and recommended next steps.
 
+### June 3, 2026 MVP Questionnaire Decision
+
+- The supplied NeuropsychU Screening and Intake draft, PHQ-9, and GAD-7 are included in the usable MVP for controlled evaluation.
+- PHQ-9 and GAD-7 remain marked `licensed_pending` until PsychU verifies permitted commercial use, required attribution, and any operational requirements. They must not be used with real students before that review is complete.
+- PHQ-9 and GAD-7 scores are calculated server-side and shown as decision support. Student pages may show numeric totals for transparency but do not present a clinical conclusion.
+- Any PHQ-9 question 9 answer above "Not at all" shows immediate 988/911 resource copy, creates a deterministic high-severity flag, marks the case urgent, and requires prompt follow-up by a clinician competent to assess suicide risk.
+- Internal drafting notes and unresolved author comments from the NeuropsychU intake PDF are excluded from the student-facing form.
+
 ## AI Triage Policy
 
 - AI triage is advisory only. It may suggest priority, rationale, missing information, and reviewer actions.
@@ -36,4 +44,5 @@ This document records the product and technical decisions made while converting 
 - Final legal copy for consent, privacy, release, and non-diagnostic disclaimer.
 - Instrument license verification for anything beyond custom MVP modules.
 - Written operational protocol for urgent flags, reviewer staffing, escalation response time, and student support language.
+- Final permitted-use and attribution review for PHQ-9 and GAD-7.
 - Security review of RLS policies, audit retention, backups, incident response, and AI provider configuration.

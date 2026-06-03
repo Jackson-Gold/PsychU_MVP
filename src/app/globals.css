@@ -164,6 +164,12 @@ h3 {
   text-decoration: none;
 }
 
+.nav-button {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
 .nav-link-active,
 .nav-link:hover {
   background: var(--ink);
@@ -566,6 +572,162 @@ h3 {
   gap: 18px;
 }
 
+.auth-grid,
+.admin-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.auth-panel {
+  align-self: start;
+}
+
+.demo-account-grid {
+  display: grid;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.demo-account {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #fff7df;
+  padding: 12px 14px;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+}
+
+.demo-account span {
+  color: var(--muted);
+}
+
+.questionnaire-form,
+.admin-stack,
+.response-stack {
+  display: grid;
+  gap: 18px;
+  margin-top: 22px;
+}
+
+.questionnaire-module,
+.response-module,
+.admin-card {
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: rgba(255, 247, 223, 0.72);
+  padding: 18px;
+}
+
+.questionnaire-module > summary,
+.response-module > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  cursor: pointer;
+}
+
+.questionnaire-module > summary strong,
+.questionnaire-module > summary small,
+.response-module > summary strong,
+.response-module > summary span {
+  display: block;
+}
+
+.questionnaire-module > summary small,
+.response-module > summary span {
+  color: var(--muted);
+}
+
+.questionnaire-module-body {
+  display: grid;
+  gap: 18px;
+  margin-top: 18px;
+}
+
+.question-group {
+  display: grid;
+  gap: 10px;
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.question-group legend {
+  font-family: "IBM Plex Sans", "Avenir Next", sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.radio-scale,
+.checkbox-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.radio-scale label,
+.checkbox-grid label {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fffaf0;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.radio-scale input,
+.checkbox-grid input {
+  width: auto;
+  margin-top: 0.25em;
+}
+
+.answer-list {
+  display: grid;
+  gap: 12px;
+  margin: 18px 0 0;
+}
+
+.answer-list div {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+
+.answer-list dt {
+  font-weight: 800;
+}
+
+.answer-list dd {
+  margin: 4px 0 0;
+  color: var(--muted);
+  white-space: pre-wrap;
+}
+
+.admin-card {
+  display: grid;
+  gap: 14px;
+}
+
+.admin-card form,
+.admin-card > form {
+  display: grid;
+  gap: 12px;
+}
+
+.code-field,
+code {
+  font-family: "SFMono-Regular", "Cascadia Code", "Liberation Mono", monospace;
+  font-size: 0.82rem;
+}
+
 .form-card {
   display: grid;
   gap: 18px;
@@ -679,10 +841,14 @@ input[type="range"] {
 @media (max-width: 860px) {
   .site-header,
   .hero,
+  .auth-grid,
+  .admin-card-grid,
   .grid-two,
   .grid-three,
   .metric-grid,
-  .split-grid {
+  .split-grid,
+  .radio-scale,
+  .checkbox-grid {
     grid-template-columns: 1fr;
   }
 

@@ -38,29 +38,44 @@ export function scoreAssessment(
       moduleId: assessmentModule.id,
       label: `${assessmentModule.title} review`,
       value: 0,
+      maxValue: 0,
       severity: "review_required",
+      interpretation: "Manual clinician review required",
       summary: "Manual clinician review required for narrative responses.",
       createdAt: now
     };
   }
 
   const scaleValues = assessmentModule.questions
-    .filter((question) => question.type === "scale_0_4")
+    .filter((question) => question.type === "scale_0_4" || question.type === "scale_0_3")
     .map((question) => Number(response.answers[question.id] ?? 0))
     .filter((value) => Number.isFinite(value));
 
-  const average = scaleValues.length
-    ? Number((scaleValues.reduce((sum, value) => sum + value, 0) / scaleValues.length).toFixed(2))
-    : 0;
+  const sum = scaleValues.reduce((total, value) => total + value, 0);
+  const value =
+    assessmentModule.scoringStrategy === "sum_scale"
+      ? sum
+      : scaleValues.length
+        ? Number((sum / scaleValues.length).toFixed(2))
+        : 0;
+  const configuredRange = assessmentModule.scoringConfig?.ranges.find(
+    (range) => value >= range.min && value <= range.max
+  );
+  const severity = configuredRange?.severity ?? scoreSeverity(value);
+  const interpretation = configuredRange?.interpretation;
 
   return {
     id: `score_${response.id}`,
     caseId: response.caseId,
     moduleId: assessmentModule.id,
-    label: `${assessmentModule.title} average`,
-    value: average,
-    severity: scoreSeverity(average),
-    summary: summarizeScore(assessmentModule.title, average),
+    label: assessmentModule.scoringConfig?.label ?? `${assessmentModule.title} average`,
+    value,
+    maxValue: assessmentModule.scoringConfig?.maxValue ?? 4,
+    severity,
+    interpretation,
+    summary: interpretation
+      ? `${assessmentModule.title}: ${interpretation}. A clinician must interpret this result in context.`
+      : summarizeScore(assessmentModule.title, value),
     createdAt: now
   };
 }
@@ -106,8 +121,12 @@ export function detectRiskFlags(
         answer.toLowerCase().includes(question.riskTrigger.includes.toLowerCase());
       const equalsMatch =
         question.riskTrigger.equals !== undefined && answer === question.riskTrigger.equals;
+      const minimumMatch =
+        question.riskTrigger.minimum !== undefined &&
+        typeof answer === "number" &&
+        answer >= question.riskTrigger.minimum;
 
-      if (includesMatch || equalsMatch) {
+      if (includesMatch || equalsMatch || minimumMatch) {
         flags.push({
           id: `risk_${response.id}_${question.id}`,
           caseId: response.caseId,

@@ -5,9 +5,10 @@ Greenfield Next.js + Supabase MVP for student-first accessibility screening, Psy
 ## What Is Built
 
 - Student portal: consent summary, case status, documentation, screening demo, and sharing controls.
-- Clinician portal: review queue, scores, documents, deterministic risk flags, advisory AI triage, and packet approval surface.
+- Student questionnaires: NeuropsychU intake, PHQ-9, and GAD-7 with persisted submissions and immediate PHQ-9 question 9 safety resources.
+- Clinician portal: assignment-scoped review queue, submitted answers, scores, documents, deterministic risk flags, and reviewer notes.
 - University portal: invite management and student-approved shared packet view.
-- Admin portal: configurable assessment module catalog with license-gating.
+- Admin portal: editable users, roles, assignments, modules, responses, scores, risk flags, clinician notes, statuses, and read-only audit logs.
 - Supabase migration: domain tables, enums, RLS policies, indexes, and seed data.
 - Tests: workflow/scoring/risk/share logic plus an accessible UI safety-banner check.
 
@@ -42,14 +43,23 @@ npm run verify
 
 1. Create a Supabase project.
 2. Apply `supabase/migrations/20260429010000_initial_schema.sql`.
-3. Optionally apply `supabase/seed.sql`.
-4. Create a private storage bucket for case documents.
-5. Configure magic-link email templates and redirect URL: `/auth/callback`.
-6. Add environment variables to Vercel and local `.env.local`.
+3. Apply `supabase/migrations/20260603010000_usable_mvp.sql`.
+4. Apply `supabase/seed.sql` to create the sample accounts and questionnaire catalog.
+5. Create a private storage bucket for case documents.
+6. Configure magic-link email templates and redirect URL: `/auth/callback`.
+7. Add environment variables to Vercel and local `.env.local`.
+
+Sample credentials are documented in `docs/demo-logins.md`.
+
+When `src/lib/assessment-catalog.ts` changes, refresh the generated questionnaire block in the seed:
+
+```bash
+node scripts/generate-assessment-seed.mjs
+```
 
 ## Production Caveats
 
 - Legal copy is placeholder text and must be approved by PsychU counsel before real student launch.
-- Named screeners/formal tests must remain disabled until licensing and permitted use are verified.
+- PHQ-9 and GAD-7 are active for controlled MVP evaluation but must not be used with real students until permitted use and attribution are verified.
 - External AI triage is stubbed behind an adapter and must not be enabled until vendor/privacy review is complete.
 - This MVP does not diagnose, determine accommodations, or provide live crisis response.

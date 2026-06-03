@@ -1,25 +1,74 @@
 import { AppShell } from "@/components/app-shell";
-import { ScreeningDemo } from "@/components/screening-demo";
+import { QuestionnaireForm } from "@/components/questionnaire-form";
 import { StatusBadge } from "@/components/status-badge";
+import { requireRoles } from "@/lib/auth";
 import {
-  demoAssessmentModules,
-  demoAssessmentResponses,
-  demoCase,
-  demoScores,
-  demoStudentProfile,
-  demoUploadedDocuments
-} from "@/lib/demo-data";
+  mapAssessmentModule,
+  mapAssessmentResponse,
+  mapCase,
+  mapScore,
+  mapStudentProfile
+} from "@/lib/data";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
-export default function StudentCasePage() {
+export default async function StudentCasePage() {
+  const context = await requireRoles(["student"]);
+  const supabase = await createSupabaseServerClient();
+
+  const [{ data: caseRow }, { data: profileRow }, { data: moduleRows }] = await Promise.all([
+    supabase
+      .from("cases")
+      .select("*")
+      .eq("student_user_id", context.user.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from("student_profiles")
+      .select("*")
+      .eq("user_id", context.user.id)
+      .maybeSingle(),
+    supabase
+      .from("assessment_modules")
+      .select("*")
+      .eq("status", "active")
+      .order("created_at")
+  ]);
+
+  if (!caseRow) {
+    return (
+      <AppShell active="/student/case">
+        <section className="panel">
+          <p className="eyebrow">Student Questionnaires</p>
+          <h1>No assigned case yet</h1>
+          <p>Ask a PsychU administrator to create and assign a screening case for this account.</p>
+        </section>
+      </AppShell>
+    );
+  }
+
+  const caseRecord = mapCase(caseRow);
+  const profile = profileRow ? mapStudentProfile(profileRow) : null;
+  const modules = (moduleRows ?? []).map(mapAssessmentModule);
+
+  const [{ data: responseRows }, { data: scoreRows }, { data: documentRows }] = await Promise.all([
+    supabase.from("assessment_responses").select("*").eq("case_id", caseRecord.id),
+    supabase.from("scores").select("*").eq("case_id", caseRecord.id).order("created_at"),
+    supabase.from("uploaded_documents").select("*").eq("case_id", caseRecord.id).order("created_at")
+  ]);
+
+  const responses = (responseRows ?? []).map(mapAssessmentResponse);
+  const scores = (scoreRows ?? []).map(mapScore);
+
   return (
-    <AppShell active="/student">
+    <AppShell active="/student/case">
       <section className="panel" aria-labelledby="case-title">
         <div className="panel-header">
           <div>
-            <p className="eyebrow">Case {demoCase.id}</p>
-            <h1 id="case-title">Screening and documentation</h1>
+            <p className="eyebrow">Case {caseRecord.id}</p>
+            <h1 id="case-title">Screening and intake</h1>
           </div>
-          <StatusBadge value={demoCase.status} />
+          <StatusBadge value={caseRecord.status} />
         </div>
 
         <div className="grid-two">
@@ -27,67 +76,79 @@ export default function StudentCasePage() {
             <h2>Student profile</h2>
             <ul className="clean-list">
               <li>
+                <strong>Name</strong>
+                <span>{profile?.preferredName ?? context.user.fullName}</span>
+              </li>
+              <li>
                 <strong>Program</strong>
                 <span>
-                  {demoStudentProfile.yearInSchool}, {demoStudentProfile.major}
+                  {profile?.yearInSchool ?? "Not provided"}
+                  {profile?.major ? `, ${profile.major}` : ""}
                 </span>
               </li>
               <li>
-                <strong>Prior accommodations</strong>
-                <span>{demoStudentProfile.priorAccommodations.join(", ")}</span>
-              </li>
-              <li>
-                <strong>Reported needs</strong>
-                <span>{demoStudentProfile.accessibilityNeeds.join("; ")}</span>
+                <strong>Next step</strong>
+                <span>{caseRecord.nextStep ?? "Complete your questionnaires."}</span>
               </li>
             </ul>
           </div>
           <div>
             <h2>Uploaded documents</h2>
-            <ul className="clean-list">
-              {demoUploadedDocuments.map((document) => (
-                <li key={document.id}>
-                  <strong>{document.fileName}</strong>
-                  <span>
-                    {document.category.replaceAll("_", " ")} · {Math.round(document.sizeBytes / 1024)} KB
-                  </span>
-                </li>
-              ))}
-            </ul>
+            {documentRows?.length ? (
+              <ul className="clean-list">
+                {documentRows.map((document) => (
+                  <li key={document.id}>
+                    <strong>{document.file_name}</strong>
+                    <span>{String(document.category).replaceAll("_", " ")}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>No documents have been uploaded yet.</p>
+            )}
           </div>
         </div>
       </section>
 
-      <ScreeningDemo modules={demoAssessmentModules} />
+      <QuestionnaireForm caseId={caseRecord.id} modules={modules} responses={responses} />
 
-      <section className="panel" aria-labelledby="scores-title">
+      <section className="panel" aria-labelledby="submission-summary-title">
         <div className="panel-header">
           <div>
             <p className="eyebrow">Submission Summary</p>
-            <h2 id="scores-title">Existing demo responses</h2>
+            <h2 id="submission-summary-title">Saved questionnaire totals</h2>
           </div>
-          <StatusBadge value={`${demoAssessmentResponses.length} modules`} tone="info" />
+          <StatusBadge value={`${responses.length} modules`} tone="info" />
         </div>
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>Module</th>
-              <th>Score</th>
-              <th>Reviewer summary</th>
-            </tr>
-          </thead>
-          <tbody>
-            {demoScores.map((score) => (
-              <tr key={score.id}>
-                <td>{score.label}</td>
-                <td>
-                  {score.value} / 4, {score.severity}
-                </td>
-                <td>{score.summary}</td>
+        <p className="legal-copy">
+          Totals are shown for transparency, but severity and clinical meaning must be interpreted by your assigned
+          clinician in context.
+        </p>
+        {scores.length ? (
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Questionnaire</th>
+                <th>Total</th>
+                <th>Status</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {scores.map((score) => (
+                <tr key={score.id}>
+                  <td>{score.label}</td>
+                  <td>
+                    {score.value}
+                    {score.maxValue ? ` / ${score.maxValue}` : ""}
+                  </td>
+                  <td>{score.severity === "review_required" ? "Clinician review required" : "Available to clinician"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <p>No questionnaire totals are available until you submit the forms.</p>
+        )}
       </section>
     </AppShell>
   );

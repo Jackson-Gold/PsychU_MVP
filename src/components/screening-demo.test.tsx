@@ -4,12 +4,13 @@ import { ScreeningDemo } from "@/components/screening-demo";
 import { demoAssessmentModules } from "@/lib/demo-data";
 
 describe("ScreeningDemo", () => {
-  it("shows immediate crisis resources when a student selects the safety risk answer", async () => {
+  it("shows immediate crisis resources when PHQ-9 question 9 is above not at all", async () => {
     render(<ScreeningDemo modules={demoAssessmentModules} />);
 
-    fireEvent.change(screen.getByLabelText("Are you currently worried you may hurt yourself or someone else?"), {
-      target: { value: "true" }
-    });
+    fireEvent.change(
+      screen.getByLabelText("Thoughts that you would be better off dead or of hurting yourself in some way"),
+      { target: { value: "1" } }
+    );
 
     expect(screen.getByRole("alert")).toHaveTextContent("call or text 988");
   });

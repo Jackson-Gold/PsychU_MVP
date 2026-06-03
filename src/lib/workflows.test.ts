@@ -17,31 +17,32 @@ import {
 } from "@/lib/workflows";
 
 describe("screening workflows", () => {
-  it("scores average-scale modules with meaningful severity", () => {
+  it("scores the PHQ-9 sum with the supplied severity ranges", () => {
     const assessmentModule = demoAssessmentModules[0];
     const response = demoAssessmentResponses[0];
     const score = scoreAssessment(assessmentModule, response, "2026-04-29T00:00:00.000Z");
 
-    expect(score.value).toBe(3.33);
-    expect(score.severity).toBe("significant");
+    expect(score.value).toBe(9);
+    expect(score.maxValue).toBe(27);
+    expect(score.severity).toBe("mild");
   });
 
-  it("detects deterministic safety flags and marks submitted cases urgent", () => {
-    const assessmentModule = demoAssessmentModules.find((item) => item.slug === "mood-anxiety-safety-custom");
+  it("detects a PHQ-9 question 9 safety flag and marks submitted cases urgent", () => {
+    const assessmentModule = demoAssessmentModules.find((item) => item.slug === "phq-9");
     expect(assessmentModule).toBeDefined();
 
     const riskResponse = {
-      ...demoAssessmentResponses[1],
+      ...demoAssessmentResponses[0],
       answers: {
-        ...demoAssessmentResponses[1].answers,
-        safety_self_harm: true
+        ...demoAssessmentResponses[0].answers,
+        phq9_9: 1
       }
     };
 
-    const flags = detectRiskFlags(demoAssessmentModules, [riskResponse], "2026-04-29T00:00:00.000Z");
+    const flags = detectRiskFlags([assessmentModule!], [riskResponse], "2026-04-29T00:00:00.000Z");
 
     expect(flags).toHaveLength(1);
-    expect(flags[0].severity).toBe("critical");
+    expect(flags[0].severity).toBe("high");
     expect(submittedStatusForFlags(flags)).toBe("urgent_flagged");
   });
 

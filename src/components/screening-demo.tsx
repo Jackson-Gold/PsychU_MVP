@@ -18,7 +18,14 @@ export function ScreeningDemo({ modules }: ScreeningDemoProps) {
   const hasSafetyFlag = useMemo(
     () =>
       modules.some((module) =>
-        module.questions.some((question) => question.riskTrigger?.equals === answers[question.id])
+        module.questions.some((question) => {
+          const answer = answers[question.id];
+          if (question.riskTrigger?.equals !== undefined && question.riskTrigger.equals === answer) return true;
+          if (question.riskTrigger?.minimum !== undefined && typeof answer === "number") {
+            return answer >= question.riskTrigger.minimum;
+          }
+          return false;
+        })
       ),
     [answers, modules]
   );
@@ -71,6 +78,19 @@ export function ScreeningDemo({ modules }: ScreeningDemoProps) {
                     onChange={(event) => updateAnswer(question.id, Number(event.target.value))}
                   />
                 ) : null}
+                {question.type === "scale_0_3" ? (
+                  <select
+                    id={question.id}
+                    value={String(answers[question.id] ?? "")}
+                    onChange={(event) => updateAnswer(question.id, Number(event.target.value))}
+                  >
+                    <option value="">Select an answer</option>
+                    <option value="0">Not at all</option>
+                    <option value="1">Several days</option>
+                    <option value="2">More than half the days</option>
+                    <option value="3">Nearly every day</option>
+                  </select>
+                ) : null}
                 {question.type === "boolean" ? (
                   <select
                     id={question.id}
@@ -88,6 +108,20 @@ export function ScreeningDemo({ modules }: ScreeningDemoProps) {
                     onChange={(event) => updateAnswer(question.id, event.target.value)}
                     rows={3}
                   />
+                ) : null}
+                {question.type === "single_select" ? (
+                  <select
+                    id={question.id}
+                    value={String(answers[question.id] ?? "")}
+                    onChange={(event) => updateAnswer(question.id, event.target.value)}
+                  >
+                    <option value="">Select an answer</option>
+                    {question.options?.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
                 ) : null}
                 <output htmlFor={question.id}>
                   Current answer: {Array.isArray(answers[question.id]) ? "selected" : String(answers[question.id] ?? "")}
@@ -118,6 +152,7 @@ function seedAnswers(modules: AssessmentModule[]): Answers {
     modules.flatMap((module) =>
       module.questions.map((question) => {
         if (question.type === "scale_0_4") return [question.id, 0] as const;
+        if (question.type === "scale_0_3") return [question.id, ""] as const;
         if (question.type === "boolean") return [question.id, false] as const;
         if (question.type === "multi_select") return [question.id, []] as const;
         return [question.id, ""] as const;
