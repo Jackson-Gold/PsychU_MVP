@@ -65,8 +65,9 @@ export default async function StudentCasePage() {
       <section className="panel" aria-labelledby="case-title">
         <div className="panel-header">
           <div>
-            <p className="eyebrow">Case {caseRecord.id}</p>
+            <p className="eyebrow">Your active screening case</p>
             <h1 id="case-title">Screening and intake</h1>
+            <p className="section-intro">{caseRecord.nextStep ?? "Complete your assigned questionnaires."}</p>
           </div>
           <StatusBadge value={caseRecord.status} />
         </div>
@@ -87,8 +88,8 @@ export default async function StudentCasePage() {
                 </span>
               </li>
               <li>
-                <strong>Next step</strong>
-                <span>{caseRecord.nextStep ?? "Complete your questionnaires."}</span>
+                <strong>Case reference</strong>
+                <span className="compact-id">{caseRecord.id}</span>
               </li>
             </ul>
           </div>

@@ -12,16 +12,20 @@ export function MagicLinkForm() {
   const [state, formAction, pending] = useActionState(sendMagicLink, initialState);
 
   return (
-    <form className="panel" action={formAction} aria-labelledby="magic-link-title">
-      <div className="panel-header">
-        <div>
-          <p className="eyebrow">Passwordless Access</p>
-          <h1 id="magic-link-title">Sign in with a magic link</h1>
-        </div>
-      </div>
+    <form className="magic-link-form" action={formAction} aria-labelledby="magic-link-title">
+      <p id="magic-link-title" className="field-help">
+        Enter the email address tied to your university invitation.
+      </p>
       <div className="field-row">
-        <label htmlFor="email">Email address</label>
-        <input id="email" name="email" type="email" autoComplete="email" required placeholder="you@university.edu" />
+        <label htmlFor="magic-link-email">Email address</label>
+        <input
+          id="magic-link-email"
+          name="email"
+          type="email"
+          autoComplete="email"
+          required
+          placeholder="you@university.edu"
+        />
       </div>
       <button className="button button-primary" type="submit" disabled={pending}>
         {pending ? "Sending..." : "Send magic link"}

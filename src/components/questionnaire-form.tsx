@@ -1,8 +1,8 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
+import { useActionState, useMemo, useState, type FormEvent } from "react";
 import {
-  submitQuestionnaires,
+  submitQuestionnaire,
   type QuestionnaireSubmissionState
 } from "@/app/student/case/actions";
 import { StatusBadge } from "@/components/status-badge";
@@ -31,123 +31,161 @@ const initialState: QuestionnaireSubmissionState = {
 const scale03Labels = ["Not at all", "Several days", "More than half the days", "Nearly every day"];
 
 export function QuestionnaireForm({ caseId, modules, responses }: QuestionnaireFormProps) {
-  const [state, formAction, pending] = useActionState(submitQuestionnaires, initialState);
-  const [answers, setAnswers] = useState<AnswerState>(() => seedAnswers(modules, responses));
-  const [openModules, setOpenModules] = useState<Set<string>>(
-    () => new Set(modules[0] ? [modules[0].id] : [])
-  );
-
-  const hasSafetyFlag = useMemo(
-    () =>
-      modules.some((module) =>
-        module.questions.some((question) =>
-          matchesRiskTrigger(question, answers[answerKey(module.id, question.id)])
-        )
-      ),
-    [answers, modules]
-  );
-
-  function updateAnswer(moduleId: string, questionId: string, value: AnswerValue) {
-    setAnswers((current) => ({ ...current, [answerKey(moduleId, questionId)]: value }));
-  }
+  const completedModuleIds = new Set(responses.map((response) => response.moduleId));
+  const firstIncompleteId = modules.find((module) => !completedModuleIds.has(module.id))?.id ?? modules[0]?.id;
+  const progress = modules.length ? Math.round((completedModuleIds.size / modules.length) * 100) : 0;
 
   return (
-    <section className="panel" aria-labelledby="questionnaire-title">
+    <section className="panel questionnaire-panel" aria-labelledby="questionnaire-title">
       <div className="panel-header">
         <div>
           <p className="eyebrow">Student Questionnaires</p>
-          <h2 id="questionnaire-title">Complete and submit all three forms</h2>
-        </div>
-        <StatusBadge value={`${responses.length} of ${modules.length} submitted`} tone="info" />
-      </div>
-
-      <p className="legal-copy">
-        These questionnaires support screening and clinician review. They do not provide a diagnosis or live
-        emergency monitoring. Named instruments remain subject to PsychU&apos;s final permitted-use review.
-      </p>
-
-      {hasSafetyFlag ? (
-        <div className="crisis-banner" role="alert">
-          <strong>Immediate support is available.</strong>
-          <p>{crisisResourceCopy}</p>
-          <p>
-            Your response will also be prominently flagged for your assigned clinician. PsychU is not a live crisis
-            response service.
+          <h2 id="questionnaire-title">Complete one form at a time</h2>
+          <p className="section-intro">
+            Save each questionnaire independently. Your case moves to clinician review after all three are submitted.
           </p>
         </div>
-      ) : null}
+        <StatusBadge value={`${completedModuleIds.size} of ${modules.length} submitted`} tone="info" />
+      </div>
 
-      <form className="questionnaire-form" action={formAction}>
-        <input type="hidden" name="case_id" value={caseId} />
+      <div className="progress-track" aria-label={`${progress}% of questionnaires submitted`}>
+        <span style={{ width: `${progress}%` }} />
+      </div>
 
+      <div className="notice-inline">
+        These questionnaires support screening and clinician review. They do not provide a diagnosis or live
+        emergency monitoring. Named instruments remain subject to PsychU&apos;s final permitted-use review.
+      </div>
+
+      <div className="questionnaire-stack">
         {modules.map((module) => {
-          const sections = groupQuestionsBySection(module.questions);
+          const response = responses.find((item) => item.moduleId === module.id);
 
           return (
-            <details
-              className="questionnaire-module"
+            <QuestionnaireModuleForm
+              caseId={caseId}
+              defaultOpen={module.id === firstIncompleteId}
               key={module.id}
-              open={openModules.has(module.id)}
-              onToggle={(event) => {
-                const isOpen = event.currentTarget.open;
-                setOpenModules((current) => {
-                  const next = new Set(current);
-                  if (isOpen) next.add(module.id);
-                  else next.delete(module.id);
-                  return next;
-                });
-              }}
-            >
-              <summary>
-                <span>
-                  <strong>{module.title}</strong>
-                  <small>
-                    {module.estimatedMinutes ? `About ${module.estimatedMinutes} minutes` : "Complete all questions"}
-                  </small>
-                </span>
-                <StatusBadge
-                  value={responses.some((response) => response.moduleId === module.id) ? "submitted" : "draft"}
-                />
-              </summary>
-
-              <div className="questionnaire-module-body">
-                {module.description ? <p>{module.description}</p> : null}
-                {module.attribution ? <p className="field-help">{module.attribution}</p> : null}
-
-                {sections.map(([section, questions]) => (
-                  <fieldset className="form-card" key={`${module.id}-${section}`}>
-                    <legend>{section}</legend>
-                    {questions.map((question) => {
-                      const value = answers[answerKey(module.id, question.id)];
-                      const visible = isQuestionVisible(module.id, question, answers);
-
-                      if (!visible) return null;
-
-                      return (
-                        <QuestionField
-                          key={question.id}
-                          moduleId={module.id}
-                          question={question}
-                          value={value}
-                          onChange={(nextValue) => updateAnswer(module.id, question.id, nextValue)}
-                        />
-                      );
-                    })}
-                  </fieldset>
-                ))}
-              </div>
-            </details>
+              module={module}
+              response={response}
+            />
           );
         })}
-
-        <button className="button button-primary" type="submit" disabled={pending}>
-          {pending ? "Submitting..." : "Submit questionnaires"}
-        </button>
-        <p className={state.status === "error" ? "form-message form-message-error" : "form-message"} role="status">
-          {state.message}
-        </p>
-      </form>
+      </div>
     </section>
+  );
+}
+
+type QuestionnaireModuleFormProps = {
+  caseId: string;
+  defaultOpen: boolean;
+  module: AssessmentModule;
+  response?: AssessmentResponse;
+};
+
+function QuestionnaireModuleForm({ caseId, defaultOpen, module, response }: QuestionnaireModuleFormProps) {
+  const [state, formAction, pending] = useActionState(submitQuestionnaire, initialState);
+  const [answers, setAnswers] = useState<AnswerState>(() => seedModuleAnswers(module, response));
+  const sections = groupQuestionsBySection(module.questions);
+  const hasSafetyFlag = useMemo(
+    () =>
+      module.questions.some((question) =>
+        matchesRiskTrigger(question, answers[answerKey(module.id, question.id)])
+      ),
+    [answers, module]
+  );
+
+  function updateAnswer(questionId: string, value: AnswerValue) {
+    setAnswers((current) => ({ ...current, [answerKey(module.id, questionId)]: value }));
+  }
+
+  return (
+    <details className="questionnaire-module" open={defaultOpen ? true : undefined}>
+      <summary>
+        <span className="questionnaire-summary-main">
+          <strong>{module.title}</strong>
+          <small>
+            {module.estimatedMinutes ? `About ${module.estimatedMinutes} minutes` : "Complete all questions"}
+            {" · "}
+            {sections.length} {sections.length === 1 ? "section" : "sections"}
+          </small>
+        </span>
+        <span className="questionnaire-summary-status">
+          <StatusBadge value={response ? "submitted" : "not started"} tone={response ? "good" : "neutral"} />
+          <span className="summary-chevron" aria-hidden="true">
+            +
+          </span>
+        </span>
+      </summary>
+
+      <form className="questionnaire-module-body" action={formAction} onInvalid={revealInvalidField}>
+        <input type="hidden" name="case_id" value={caseId} />
+        <input type="hidden" name="module_id" value={module.id} />
+
+        <div className="questionnaire-intro">
+          {module.description ? <p>{module.description}</p> : null}
+          {module.attribution ? <p className="field-help">{module.attribution}</p> : null}
+          {response ? (
+            <p className="saved-note">Last submitted {new Date(response.completedAt).toLocaleString()}.</p>
+          ) : null}
+        </div>
+
+        {hasSafetyFlag ? (
+          <div className="crisis-banner" role="alert">
+            <strong>Immediate support is available.</strong>
+            <p>{crisisResourceCopy}</p>
+            <p>
+              Your response will also be prominently flagged for your assigned clinician. PsychU is not a live
+              crisis response service.
+            </p>
+          </div>
+        ) : null}
+
+        <div className="questionnaire-sections">
+          {sections.map(([section, questions], index) => (
+            <details className="question-section" open={index === 0 ? true : undefined} key={`${module.id}-${section}`}>
+              <summary>
+                <span>
+                  <strong>{section}</strong>
+                  <small>
+                    {questions.length} {questions.length === 1 ? "question" : "questions"}
+                  </small>
+                </span>
+                <span className="summary-chevron" aria-hidden="true">
+                  +
+                </span>
+              </summary>
+              <fieldset className="form-card">
+                <legend className="sr-only">{section}</legend>
+                {questions.map((question) => {
+                  const value = answers[answerKey(module.id, question.id)];
+                  if (!isQuestionVisible(module.id, question, answers)) return null;
+
+                  return (
+                    <QuestionField
+                      key={question.id}
+                      moduleId={module.id}
+                      question={question}
+                      value={value}
+                      onChange={(nextValue) => updateAnswer(question.id, nextValue)}
+                    />
+                  );
+                })}
+              </fieldset>
+            </details>
+          ))}
+        </div>
+
+        <div className="form-actions">
+          <button className="button button-primary" type="submit" disabled={pending}>
+            {pending ? "Saving..." : response ? "Update submitted questionnaire" : "Save and submit questionnaire"}
+          </button>
+          <p className={state.status === "error" ? "form-message form-message-error" : "form-message"} role="status">
+            {state.message}
+          </p>
+        </div>
+      </form>
+    </details>
   );
 }
 
@@ -254,12 +292,7 @@ function QuestionField({ moduleId, question, value, onChange }: QuestionFieldPro
         <div className="checkbox-grid">
           {question.options?.map((option) => (
             <label key={option}>
-              <input
-                name={name}
-                type="checkbox"
-                value={option}
-                defaultChecked={selected.includes(option)}
-              />
+              <input name={name} type="checkbox" value={option} defaultChecked={selected.includes(option)} />
               <span>{option}</span>
             </label>
           ))}
@@ -300,19 +333,15 @@ function QuestionField({ moduleId, question, value, onChange }: QuestionFieldPro
   );
 }
 
-function seedAnswers(modules: AssessmentModule[], responses: AssessmentResponse[]): AnswerState {
-  const responseByModule = new Map(responses.map((response) => [response.moduleId, response]));
-
+function seedModuleAnswers(module: AssessmentModule, response?: AssessmentResponse): AnswerState {
   return Object.fromEntries(
-    modules.flatMap((module) =>
-      module.questions.map((question) => {
-        const savedValue = responseByModule.get(module.id)?.answers[question.id];
+    module.questions.map((question) => {
+      const savedValue = response?.answers[question.id];
 
-        if (savedValue !== undefined) return [answerKey(module.id, question.id), savedValue] as const;
-        if (question.type === "multi_select") return [answerKey(module.id, question.id), []] as const;
-        return [answerKey(module.id, question.id), ""] as const;
-      })
-    )
+      if (savedValue !== undefined) return [answerKey(module.id, question.id), savedValue] as const;
+      if (question.type === "multi_select") return [answerKey(module.id, question.id), []] as const;
+      return [answerKey(module.id, question.id), ""] as const;
+    })
   );
 }
 
@@ -360,4 +389,13 @@ function matchesRiskTrigger(question: AssessmentQuestion, answer: AnswerValue | 
     return true;
   }
   return false;
+}
+
+function revealInvalidField(event: FormEvent<HTMLFormElement>) {
+  let details = (event.target as HTMLElement).closest("details");
+
+  while (details) {
+    details.open = true;
+    details = details.parentElement?.closest("details") ?? null;
+  }
 }

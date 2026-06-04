@@ -61,6 +61,7 @@ export default async function ClinicianCasePage({ params }: ClinicianCasePagePro
           <div>
             <p className="eyebrow">Clinician Review</p>
             <h1 id="review-title">{profile?.preferredName ?? "Student"}&apos;s case</h1>
+            <p className="section-intro">{caseRecord.nextStep ?? "Review the submitted information and choose a next step."}</p>
           </div>
           <StatusBadge value={caseRecord.status} />
         </div>
@@ -75,8 +76,8 @@ export default async function ClinicianCasePage({ params }: ClinicianCasePagePro
                 <span>{caseRecord.submittedAt ? new Date(caseRecord.submittedAt).toLocaleString() : "Not recorded"}</span>
               </li>
               <li>
-                <strong>Assigned clinician ID</strong>
-                <span>{caseRecord.assignedClinicianUserId ?? "Unassigned"}</span>
+                <strong>Student program</strong>
+                <span>{profile ? `${profile.yearInSchool}${profile.major ? `, ${profile.major}` : ""}` : "Not provided"}</span>
               </li>
             </ul>
           </article>
@@ -136,6 +137,7 @@ export default async function ClinicianCasePage({ params }: ClinicianCasePagePro
                     <StatusBadge value={flag.severity} /> {flag.source.replaceAll("_", " ")}
                   </strong>
                   <span>{flag.message}</span>
+                  <span>{flag.resolvedAt ? `Resolved ${new Date(flag.resolvedAt).toLocaleString()}` : "Unresolved"}</span>
                 </li>
               ))}
             </ul>

@@ -14,15 +14,16 @@ export type QuestionnaireSubmissionState = {
 
 const caseIdSchema = z.string().uuid();
 
-export async function submitQuestionnaires(
+export async function submitQuestionnaire(
   _previousState: QuestionnaireSubmissionState,
   formData: FormData
 ): Promise<QuestionnaireSubmissionState> {
   const context = await requireRoles(["student"]);
   const caseId = caseIdSchema.safeParse(formData.get("case_id"));
+  const moduleId = caseIdSchema.safeParse(formData.get("module_id"));
 
-  if (!caseId.success) {
-    return { status: "error", message: "The case identifier is missing or invalid." };
+  if (!caseId.success || !moduleId.success) {
+    return { status: "error", message: "The case or questionnaire identifier is missing or invalid." };
   }
 
   const supabase = await createSupabaseServerClient();
@@ -37,47 +38,46 @@ export async function submitQuestionnaires(
     return { status: "error", message: "We could not find a case that belongs to this student account." };
   }
 
-  const { data: modules, error: modulesError } = await supabase
+  const { data: assessmentModule, error: moduleError } = await supabase
     .from("assessment_modules")
-    .select("id,version,questions")
+    .select("id,title,version,questions")
+    .eq("id", moduleId.data)
     .eq("status", "active")
-    .order("created_at");
+    .maybeSingle();
 
-  if (modulesError || !modules?.length) {
-    return { status: "error", message: "No active questionnaires are available. Ask an administrator to sync the catalog." };
+  if (moduleError || !assessmentModule) {
+    return { status: "error", message: "This questionnaire is not currently available." };
   }
 
-  for (const assessmentModule of modules) {
-    const questions = (assessmentModule.questions ?? []) as AssessmentQuestion[];
-    const answers = parseAnswers(formData, assessmentModule.id, questions);
-    const missingQuestion = questions.find(
-      (question) => question.required && isQuestionVisible(question, answers) && isEmptyAnswer(answers[question.id])
-    );
+  const questions = (assessmentModule.questions ?? []) as AssessmentQuestion[];
+  const answers = parseAnswers(formData, assessmentModule.id, questions);
+  const missingQuestion = questions.find(
+    (question) => question.required && isQuestionVisible(question, answers) && isEmptyAnswer(answers[question.id])
+  );
 
-    if (missingQuestion) {
-      return {
-        status: "error",
-        message: `Please answer the required question: ${missingQuestion.label}`
-      };
-    }
+  if (missingQuestion) {
+    return {
+      status: "error",
+      message: `Please answer the required question: ${missingQuestion.label}`
+    };
+  }
 
-    const { error } = await supabase.from("assessment_responses").upsert(
-      {
-        case_id: caseId.data,
-        module_id: assessmentModule.id,
-        module_version: assessmentModule.version,
-        answers,
-        completed_at: new Date().toISOString()
-      },
-      { onConflict: "case_id,module_id,module_version" }
-    );
+  const { error } = await supabase.from("assessment_responses").upsert(
+    {
+      case_id: caseId.data,
+      module_id: assessmentModule.id,
+      module_version: assessmentModule.version,
+      answers,
+      completed_at: new Date().toISOString()
+    },
+    { onConflict: "case_id,module_id,module_version" }
+  );
 
-    if (error) {
-      return {
-        status: "error",
-        message: `We could not save the questionnaires. ${error.message}`
-      };
-    }
+  if (error) {
+    return {
+      status: "error",
+      message: `We could not save this questionnaire. ${error.message}`
+    };
   }
 
   revalidatePath("/student");
@@ -87,7 +87,7 @@ export async function submitQuestionnaires(
 
   return {
     status: "success",
-    message: "Your questionnaires were submitted to your assigned PsychU clinician."
+    message: `${assessmentModule.title} was saved and submitted to your assigned clinician.`
   };
 }
 

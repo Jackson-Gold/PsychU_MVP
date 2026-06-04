@@ -14,8 +14,7 @@ export default async function ClinicianQueuePage() {
   let casesQuery = supabase
     .from("cases")
     .select("*")
-    .neq("status", "draft")
-    .order("submitted_at", { ascending: false });
+    .order("updated_at", { ascending: false });
 
   if (!isAdmin) {
     casesQuery = casesQuery.eq("assigned_clinician_user_id", context.user.id);
@@ -54,13 +53,16 @@ export default async function ClinicianQueuePage() {
         <div className="panel-header">
           <div>
             <p className="eyebrow">PsychU Clinician Portal</p>
-            <h1 id="queue-title">{isAdmin ? "All submitted cases" : "Your assigned review queue"}</h1>
+            <h1 id="queue-title">{isAdmin ? "All student cases" : "Your assigned cases"}</h1>
+            <p className="section-intro">
+              Track questionnaire progress, review safety flags, and continue each assigned case.
+            </p>
           </div>
           <StatusBadge value={isAdmin ? "admin view" : "assignment scoped"} tone="info" />
         </div>
 
         <div className="metric-grid">
-          <MetricCard label="Open cases" value={cases.length} detail="Submitted cases visible to this account" />
+          <MetricCard label="Assigned cases" value={cases.length} detail="All cases visible to this account" />
           <MetricCard label="Urgent flags" value={urgentCount} detail="Unresolved deterministic safety flags" />
           <MetricCard label="Highest total" value={maxScore} detail="Across visible scored questionnaires" />
         </div>
@@ -70,11 +72,12 @@ export default async function ClinicianQueuePage() {
         <div className="panel-header">
           <div>
             <p className="eyebrow">Cases</p>
-            <h2 id="queue-table-title">Needs clinician review</h2>
+            <h2 id="queue-table-title">Case workspace</h2>
           </div>
         </div>
         {cases.length ? (
-          <table className="data-table">
+          <div className="table-scroll">
+            <table className="data-table">
             <thead>
               <tr>
                 <th>Student</th>
@@ -89,14 +92,13 @@ export default async function ClinicianQueuePage() {
                 <tr key={caseRecord.id}>
                   <td>
                     <strong>{profiles.get(caseRecord.studentUserId) ?? "Student"}</strong>
-                    <br />
-                    {caseRecord.currentSummary}
+                    <span className="table-subcopy">{caseRecord.currentSummary}</span>
                   </td>
                   <td>
                     <StatusBadge value={caseRecord.status} />
                   </td>
                   <td>{(responseRows ?? []).filter((response) => response.case_id === caseRecord.id).length} submitted</td>
-                  <td>{caseRecord.submittedAt ? new Date(caseRecord.submittedAt).toLocaleString() : "Not recorded"}</td>
+                  <td>{caseRecord.submittedAt ? new Date(caseRecord.submittedAt).toLocaleString() : "In progress"}</td>
                   <td>
                     <Link className="button button-primary" href={`/clinician/cases/${caseRecord.id}`}>
                       Review case
@@ -105,9 +107,13 @@ export default async function ClinicianQueuePage() {
                 </tr>
               ))}
             </tbody>
-          </table>
+            </table>
+          </div>
         ) : (
-          <p>No submitted cases are currently assigned to this account.</p>
+          <div className="empty-state">
+            <strong>No assigned cases yet</strong>
+            <span>Cases assigned by an administrator will appear here.</span>
+          </div>
         )}
       </section>
     </AppShell>

@@ -8,7 +8,7 @@ import {
 
 const initialState: PasswordLoginState = {
   status: "idle",
-  message: "Use a seeded demo account or an account created in Supabase Auth."
+  message: "Choose a demo role below or enter your account credentials."
 };
 
 const demoAccounts = [
@@ -66,6 +66,7 @@ export function LoginForm() {
       </p>
 
       <div className="demo-account-grid" aria-label="Sample login choices">
+        <p className="field-help">Demo accounts</p>
         {demoAccounts.map((account) => (
           <button
             className="demo-account"
@@ -84,4 +85,3 @@ export function LoginForm() {
     </section>
   );
 }
-

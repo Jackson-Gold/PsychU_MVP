@@ -48,10 +48,14 @@ export default function UniversityInvitesPage() {
             <label htmlFor="invite-note">Internal note</label>
             <input id="invite-note" type="text" placeholder="Pilot cohort or reason" />
           </div>
-          <button className="button button-primary" type="button">
-            Send invite
+          <button className="button button-primary" type="button" disabled title="Invite sending is not enabled in this MVP">
+            Invite sending not enabled
           </button>
         </form>
+        <p className="field-help">
+          This university invite form is a visual preview. It is disabled so it cannot appear to send an invitation
+          when no invite action is connected.
+        </p>
       </section>
 
       <section className="panel" aria-labelledby="pending-invites-title">

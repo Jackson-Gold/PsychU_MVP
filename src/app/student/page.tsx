@@ -10,7 +10,13 @@ export default async function StudentDashboardPage() {
   const context = await requireRoles(["student"]);
   const supabase = await createSupabaseServerClient();
 
-  const [{ data: caseRow }, { data: profileRow }, { count: documentCount }, { count: notificationCount }] =
+  const [
+    { data: caseRow },
+    { data: profileRow },
+    { count: documentCount },
+    { count: notificationCount },
+    { count: moduleCount }
+  ] =
     await Promise.all([
       supabase
         .from("cases")
@@ -29,11 +35,23 @@ export default async function StudentDashboardPage() {
         .select("*", { count: "exact", head: true }),
       supabase
         .from("notifications")
+        .select("*", { count: "exact", head: true }),
+      supabase
+        .from("assessment_modules")
         .select("*", { count: "exact", head: true })
+        .eq("status", "active")
     ]);
 
   const caseRecord = caseRow ? mapCase(caseRow) : null;
   const profile = profileRow ? mapStudentProfile(profileRow) : null;
+  const { count: responseCount } = caseRecord
+    ? await supabase
+        .from("assessment_responses")
+        .select("*", { count: "exact", head: true })
+        .eq("case_id", caseRecord.id)
+    : { count: 0 };
+  const completedCount = responseCount ?? 0;
+  const totalCount = moduleCount ?? 0;
 
   return (
     <AppShell active="/student">
@@ -42,15 +60,16 @@ export default async function StudentDashboardPage() {
           <div>
             <p className="eyebrow">Student Portal</p>
             <h1 id="student-title">Welcome back, {profile?.preferredName ?? context.user.fullName}</h1>
+            <p className="section-intro">{caseRecord?.nextStep ?? "Ask PsychU to assign a screening case."}</p>
           </div>
           <StatusBadge value={caseRecord?.status ?? "no case"} />
         </div>
 
         <div className="metric-grid">
           <MetricCard
-            label="Case status"
-            value={(caseRecord?.status ?? "not started").replaceAll("_", " ")}
-            detail={caseRecord?.nextStep ?? "Ask PsychU to assign a case"}
+            label="Questionnaires"
+            value={`${completedCount}/${totalCount}`}
+            detail={completedCount === totalCount && totalCount > 0 ? "All forms submitted" : "Complete at your own pace"}
           />
           <MetricCard label="Documents" value={documentCount ?? 0} detail="Private until you share a reviewed packet" />
           <MetricCard label="Notifications" value={notificationCount ?? 0} detail="Review and next-step updates" />
@@ -58,18 +77,19 @@ export default async function StudentDashboardPage() {
       </section>
 
       <section className="grid-two">
-        <article className="panel">
+        <article className="panel action-card">
           <p className="eyebrow">Next Action</p>
-          <h2>Complete your questionnaires</h2>
+          <h2>{completedCount ? "Continue your questionnaires" : "Start your questionnaires"}</h2>
           <p>
-            Fill out the NeuropsychU intake, PHQ-9, and GAD-7. Your submitted answers go to your assigned clinician.
+            Save each form separately. Your case moves to clinician review after the NeuropsychU intake, PHQ-9, and
+            GAD-7 are submitted.
           </p>
           <Link className="button button-primary" href="/student/case">
-            Open questionnaires
+            {completedCount ? "Continue questionnaires" : "Start questionnaires"}
           </Link>
         </article>
 
-        <article className="panel">
+        <article className="panel action-card">
           <p className="eyebrow">Sharing Control</p>
           <h2>You decide what leaves PsychU</h2>
           <p>
