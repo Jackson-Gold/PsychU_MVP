@@ -72,7 +72,12 @@ export default async function StudentDashboardPage() {
             detail={completedCount === totalCount && totalCount > 0 ? "All forms submitted" : "Complete at your own pace"}
           />
           <MetricCard label="Documents" value={documentCount ?? 0} detail="Private until you share a reviewed packet" />
-          <MetricCard label="Notifications" value={notificationCount ?? 0} detail="Review and next-step updates" />
+          <MetricCard
+            label="Notifications"
+            value={notificationCount ?? 0}
+            detail="Review and next-step updates"
+            href="/notifications"
+          />
         </div>
       </section>
 

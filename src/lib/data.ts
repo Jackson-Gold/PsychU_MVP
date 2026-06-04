@@ -6,14 +6,17 @@ import type {
   CaseStatus,
   ClinicianReview,
   Membership,
+  Notification,
   PsychuCase,
   RiskFlag,
   Role,
   Score,
   ScoreRange,
   ScoreSeverity,
+  ShareStatus,
   StudentProfile,
   TriageOutcome,
+  TriagePacket,
   User
 } from "@/lib/domain";
 
@@ -158,6 +161,50 @@ export function mapAuditLog(row: Record<string, unknown>): AuditLog {
     targetType: String(row.target_type),
     targetId: String(row.target_id ?? ""),
     metadata: (row.metadata ?? {}) as AuditLog["metadata"],
+    createdAt: String(row.created_at)
+  };
+}
+
+export function mapTriagePacket(row: Record<string, unknown>): TriagePacket {
+  return {
+    id: String(row.id),
+    caseId: String(row.case_id),
+    reviewId: String(row.review_id),
+    version: Number(row.version ?? 1),
+    approvedByUserId: String(row.approved_by_user_id ?? ""),
+    studentSummary: String(row.student_summary ?? ""),
+    universitySummary: String(row.university_summary ?? ""),
+    scores: (row.scores ?? []) as TriagePacket["scores"],
+    riskFlags: (row.risk_flags ?? []) as TriagePacket["riskFlags"],
+    documentList: (row.document_list ?? []) as TriagePacket["documentList"],
+    recommendedNextSteps: (row.recommended_next_steps ?? []) as string[],
+    legalDisclaimer: String(row.legal_disclaimer ?? ""),
+    createdAt: String(row.created_at)
+  };
+}
+
+export function mapShareGrant(row: Record<string, unknown>) {
+  return {
+    id: String(row.id),
+    packetId: String(row.packet_id),
+    studentUserId: String(row.student_user_id),
+    organizationId: String(row.organization_id),
+    recipientUserId: row.recipient_user_id ? String(row.recipient_user_id) : undefined,
+    status: row.status as ShareStatus,
+    expiresAt: row.expires_at ? String(row.expires_at) : undefined,
+    createdAt: String(row.created_at),
+    revokedAt: row.revoked_at ? String(row.revoked_at) : undefined
+  };
+}
+
+export function mapNotification(row: Record<string, unknown>): Notification {
+  return {
+    id: String(row.id),
+    userId: String(row.user_id),
+    type: row.type as Notification["type"],
+    title: String(row.title),
+    body: String(row.body),
+    readAt: row.read_at ? String(row.read_at) : undefined,
     createdAt: String(row.created_at)
   };
 }

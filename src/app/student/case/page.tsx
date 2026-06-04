@@ -1,7 +1,10 @@
 import { AppShell } from "@/components/app-shell";
 import { QuestionnaireForm } from "@/components/questionnaire-form";
 import { StatusBadge } from "@/components/status-badge";
+import { ConsentGate } from "@/app/student/case/consent-gate";
+import { DocumentUpload } from "@/app/student/case/document-upload";
 import { requireRoles } from "@/lib/auth";
+import { getPendingConsents } from "@/lib/consent";
 import {
   mapAssessmentModule,
   mapAssessmentResponse,
@@ -10,6 +13,7 @@ import {
   mapStudentProfile
 } from "@/lib/data";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createDocumentSignedUrls } from "@/lib/supabase/storage";
 
 export default async function StudentCasePage() {
   const context = await requireRoles(["student"]);
@@ -59,6 +63,11 @@ export default async function StudentCasePage() {
 
   const responses = (responseRows ?? []).map(mapAssessmentResponse);
   const scores = (scoreRows ?? []).map(mapScore);
+  const documents = documentRows ?? [];
+  const [documentUrls, pendingConsents] = await Promise.all([
+    createDocumentSignedUrls(supabase, documents.map((document) => String(document.storage_path))),
+    getPendingConsents(supabase, context.user.id)
+  ]);
 
   return (
     <AppShell active="/student/case">
@@ -95,14 +104,25 @@ export default async function StudentCasePage() {
           </div>
           <div>
             <h2>Uploaded documents</h2>
-            {documentRows?.length ? (
+            {documents.length ? (
               <ul className="clean-list">
-                {documentRows.map((document) => (
-                  <li key={document.id}>
-                    <strong>{document.file_name}</strong>
-                    <span>{String(document.category).replaceAll("_", " ")}</span>
-                  </li>
-                ))}
+                {documents.map((document) => {
+                  const url = documentUrls.get(String(document.storage_path));
+                  return (
+                    <li key={String(document.id)}>
+                      <strong>
+                        {url ? (
+                          <a href={url} target="_blank" rel="noopener noreferrer">
+                            {String(document.file_name)}
+                          </a>
+                        ) : (
+                          String(document.file_name)
+                        )}
+                      </strong>
+                      <span>{String(document.category).replaceAll("_", " ")}</span>
+                    </li>
+                  );
+                })}
               </ul>
             ) : (
               <p>No documents have been uploaded yet.</p>
@@ -111,7 +131,37 @@ export default async function StudentCasePage() {
         </div>
       </section>
 
-      <QuestionnaireForm caseId={caseRecord.id} modules={modules} responses={responses} />
+      <section className="panel" aria-labelledby="upload-title">
+        <div className="panel-header">
+          <div>
+            <p className="eyebrow">Supporting Documents</p>
+            <h2 id="upload-title">Upload prior evaluations or records</h2>
+            <p className="section-intro">
+              Documents are stored privately and shared only with your assigned PsychU clinician unless you release a
+              reviewed packet.
+            </p>
+          </div>
+        </div>
+        <DocumentUpload caseId={caseRecord.id} />
+      </section>
+
+      {pendingConsents.length ? (
+        <section className="panel" aria-labelledby="consent-title">
+          <div className="panel-header">
+            <div>
+              <p className="eyebrow">Consent Required</p>
+              <h2 id="consent-title">Review and agree before continuing</h2>
+              <p className="section-intro">
+                Please review the forms below. Your questionnaires unlock once your consent is recorded.
+              </p>
+            </div>
+            <StatusBadge value="action needed" tone="warn" />
+          </div>
+          <ConsentGate consents={pendingConsents} />
+        </section>
+      ) : (
+        <QuestionnaireForm caseId={caseRecord.id} modules={modules} responses={responses} />
+      )}
 
       <section className="panel" aria-labelledby="submission-summary-title">
         <div className="panel-header">

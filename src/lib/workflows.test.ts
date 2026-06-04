@@ -7,14 +7,24 @@ import {
   demoShareGrant
 } from "@/lib/demo-data";
 import {
+  buildTriagePacket,
   canAccessClinicianQueue,
   canTransitionCase,
   canViewSharedPacket,
+  derivePacketNextSteps,
   detectRiskFlags,
+  redactPacketForUniversity,
   scoreAssessment,
   submittedStatusForFlags,
   validateAiTriageOutput
 } from "@/lib/workflows";
+import {
+  demoCase,
+  demoClinicianReview,
+  demoScores,
+  demoUploadedDocuments
+} from "@/lib/demo-data";
+import type { ClinicianReview, RiskFlag } from "@/lib/domain";
 
 describe("screening workflows", () => {
   it("scores the PHQ-9 sum with the supplied severity ranges", () => {
@@ -93,5 +103,67 @@ describe("screening workflows", () => {
     const clinicianMemberships = demoMemberships.filter((membership) => membership.userId === "user_clinician_rivera");
     expect(canAccessClinicianQueue(clinicianMemberships)).toBe(true);
     expect(demoPacket.legalDisclaimer).toContain("not a diagnosis");
+  });
+
+  it("builds a triage packet from review, scores, and documents", () => {
+    const criticalFlag: RiskFlag = {
+      id: "risk_critical",
+      caseId: demoCase.id,
+      source: "deterministic_screening",
+      severity: "critical",
+      message: "Critical safety concern requires follow-up.",
+      createdAt: "2026-04-29T00:00:00.000Z"
+    };
+    const resolvedFlag: RiskFlag = { ...criticalFlag, id: "risk_resolved", resolvedAt: "2026-04-29T01:00:00.000Z" };
+
+    const packet = buildTriagePacket({
+      caseRecord: demoCase,
+      review: demoClinicianReview,
+      scores: demoScores,
+      riskFlags: [criticalFlag, resolvedFlag],
+      documents: demoUploadedDocuments,
+      now: "2026-04-29T02:00:00.000Z"
+    });
+
+    expect(packet.caseId).toBe(demoCase.id);
+    expect(packet.version).toBe(1);
+    expect(packet.studentSummary).toBe(demoClinicianReview.studentFacingSummary);
+    expect(packet.documentList).toHaveLength(demoUploadedDocuments.length);
+    expect(packet.riskFlags.map((flag) => flag.id)).toEqual(["risk_critical"]);
+    expect(packet.legalDisclaimer).toContain("not a diagnosis");
+  });
+
+  it("derives next steps from the review outcome", () => {
+    const reviewWithDocs: ClinicianReview = {
+      ...demoClinicianReview,
+      outcome: "request_more_docs",
+      requestedDocuments: ["Updated psychoeducational evaluation"]
+    };
+    const steps = derivePacketNextSteps(reviewWithDocs);
+    expect(steps[0]).toContain("Upload the requested documentation");
+    expect(steps).toContain("Requested document: Updated psychoeducational evaluation");
+  });
+
+  it("redacts critical flag detail in the university-facing packet", () => {
+    const criticalFlag: RiskFlag = {
+      id: "risk_critical",
+      caseId: demoCase.id,
+      source: "deterministic_screening",
+      severity: "critical",
+      message: "Sensitive raw safety detail.",
+      createdAt: "2026-04-29T00:00:00.000Z"
+    };
+    const packet = buildTriagePacket({
+      caseRecord: demoCase,
+      review: demoClinicianReview,
+      scores: demoScores,
+      riskFlags: [criticalFlag],
+      documents: [],
+      now: "2026-04-29T02:00:00.000Z"
+    });
+
+    const redacted = redactPacketForUniversity(packet);
+    expect(redacted.riskFlags[0].message).not.toContain("Sensitive raw safety detail");
+    expect(redacted.riskFlags[0].message).toContain("Contact PsychU");
   });
 });

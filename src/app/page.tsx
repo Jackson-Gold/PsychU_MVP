@@ -88,7 +88,7 @@ export default function HomePage() {
           </article>
           <article className="workflow-step">
             <strong>3. Student sharing</strong>
-            <span>Packet v{demoPacket.version} can be shared via secure portal or exported as a reviewed PDF.</span>
+            <span>Packet v{demoPacket.version} is released through the secure portal only when the student approves.</span>
           </article>
         </div>
       </section>

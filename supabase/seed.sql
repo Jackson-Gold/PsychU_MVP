@@ -72,6 +72,40 @@ values
     '',
     '',
     ''
+  ),
+  (
+    '00000000-0000-0000-0000-000000000000',
+    '10000000-0000-0000-0000-000000000004',
+    'authenticated',
+    'authenticated',
+    'staff@example.com',
+    crypt('PsychU-Demo-2026!', gen_salt('bf')),
+    now(),
+    '{"provider":"email","providers":["email"]}'::jsonb,
+    '{"full_name":"Priya Nair"}'::jsonb,
+    now(),
+    now(),
+    '',
+    '',
+    '',
+    ''
+  ),
+  (
+    '00000000-0000-0000-0000-000000000000',
+    '10000000-0000-0000-0000-000000000005',
+    'authenticated',
+    'authenticated',
+    'university@example.com',
+    crypt('PsychU-Demo-2026!', gen_salt('bf')),
+    now(),
+    '{"provider":"email","providers":["email"]}'::jsonb,
+    '{"full_name":"Jordan Brooks"}'::jsonb,
+    now(),
+    now(),
+    '',
+    '',
+    '',
+    ''
   )
 on conflict (id) do update set
   email = excluded.email,
@@ -121,6 +155,26 @@ values
     now(),
     now(),
     now()
+  ),
+  (
+    '20000000-0000-0000-0000-000000000004',
+    '10000000-0000-0000-0000-000000000004',
+    '10000000-0000-0000-0000-000000000004',
+    '{"sub":"10000000-0000-0000-0000-000000000004","email":"staff@example.com"}'::jsonb,
+    'email',
+    now(),
+    now(),
+    now()
+  ),
+  (
+    '20000000-0000-0000-0000-000000000005',
+    '10000000-0000-0000-0000-000000000005',
+    '10000000-0000-0000-0000-000000000005',
+    '{"sub":"10000000-0000-0000-0000-000000000005","email":"university@example.com"}'::jsonb,
+    'email',
+    now(),
+    now(),
+    now()
   )
 on conflict (provider_id, provider) do update set
   identity_data = excluded.identity_data,
@@ -145,6 +199,18 @@ values
     '10000000-0000-0000-0000-000000000003',
     '00000000-0000-0000-0000-000000000001',
     'psychu_admin'
+  ),
+  (
+    '30000000-0000-0000-0000-000000000004',
+    '10000000-0000-0000-0000-000000000004',
+    '00000000-0000-0000-0000-000000000002',
+    'university_staff'
+  ),
+  (
+    '30000000-0000-0000-0000-000000000005',
+    '10000000-0000-0000-0000-000000000005',
+    '00000000-0000-0000-0000-000000000002',
+    'university_admin'
   )
 on conflict (user_id, organization_id, role) do nothing;
 

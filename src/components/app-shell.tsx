@@ -88,12 +88,17 @@ function navigationForRoles(roles: Role[]) {
   }
 
   if (roles.includes("university_admin")) {
-    items.push({ href: "/university/invites", label: "University" });
+    items.push(
+      { href: "/university/shared-packets", label: "Shared packets" },
+      { href: "/university/invites", label: "Invites" }
+    );
   } else if (roles.includes("university_staff")) {
-    items.push({ href: "/university/shared-packets", label: "University" });
+    items.push({ href: "/university/shared-packets", label: "Shared packets" });
   }
 
-  if (!roles.length) {
+  if (roles.length) {
+    items.push({ href: "/notifications", label: "Notifications" });
+  } else {
     items.push({ href: "/", label: "Overview" }, { href: "/auth", label: "Sign in" });
   }
 

@@ -1,7 +1,9 @@
 import { AppShell } from "@/components/app-shell";
 import { StatusBadge } from "@/components/status-badge";
+import { TriagePacketCard } from "@/components/triage-packet-card";
+import { ShareControls } from "@/app/student/share/share-controls";
 import { requireRoles } from "@/lib/auth";
-import { mapCase } from "@/lib/data";
+import { mapCase, mapShareGrant, mapTriagePacket } from "@/lib/data";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export default async function StudentSharePage() {
@@ -17,13 +19,36 @@ export default async function StudentSharePage() {
     .maybeSingle();
 
   const caseRecord = caseRow ? mapCase(caseRow) : null;
+
   const { data: packetRows } = caseRecord
-    ? await supabase.from("triage_packets").select("*").eq("case_id", caseRecord.id).order("version", { ascending: false })
+    ? await supabase
+        .from("triage_packets")
+        .select("*")
+        .eq("case_id", caseRecord.id)
+        .order("version", { ascending: false })
     : { data: [] };
-  const packet = packetRows?.[0];
+
+  const packet = packetRows?.[0] ? mapTriagePacket(packetRows[0]) : null;
+
   const { data: grantRows } = packet
-    ? await supabase.from("share_grants").select("*").eq("packet_id", packet.id).order("created_at", { ascending: false })
+    ? await supabase
+        .from("share_grants")
+        .select("*")
+        .eq("packet_id", packet.id)
+        .order("created_at", { ascending: false })
     : { data: [] };
+
+  const grants = (grantRows ?? []).map(mapShareGrant);
+  const activeGrant = grants.find((grant) => grant.status === "active") ?? null;
+
+  const { data: orgRow } = caseRecord
+    ? await supabase
+        .from("organizations")
+        .select("name")
+        .eq("id", caseRecord.organizationId)
+        .maybeSingle()
+    : { data: null };
+  const universityName = orgRow?.name ?? "your university accessibility office";
 
   return (
     <AppShell active="/student/share">
@@ -33,29 +58,37 @@ export default async function StudentSharePage() {
             <p className="eyebrow">Student-Controlled Sharing</p>
             <h1 id="share-title">Release only what you approve</h1>
           </div>
-          <StatusBadge value={grantRows?.[0]?.status ?? "not shared"} />
+          <StatusBadge value={activeGrant ? "active" : "not shared"} />
         </div>
         <p>
-          Your questionnaire responses and clinician notes are not automatically sent to a university. Sharing
-          becomes available after a clinician approves a reviewed packet.
+          Your questionnaire responses and clinician notes are never sent to a university automatically. Sharing
+          becomes available after a clinician approves a reviewed packet, and you can revoke access at any time.
         </p>
       </section>
 
       {packet ? (
-        <section className="panel" aria-labelledby="packet-title">
-          <div className="panel-header">
-            <div>
-              <p className="eyebrow">Reviewed Packet</p>
-              <h2 id="packet-title">Triage packet v{packet.version}</h2>
+        <>
+          <TriagePacketCard packet={packet} audience="student" />
+
+          <section className="panel" aria-labelledby="share-controls-title">
+            <div className="panel-header">
+              <div>
+                <p className="eyebrow">Sharing Controls</p>
+                <h2 id="share-controls-title">
+                  {activeGrant ? "Manage university access" : "Share this reviewed packet"}
+                </h2>
+              </div>
+              {activeGrant?.expiresAt ? (
+                <StatusBadge value={`expires ${new Date(activeGrant.expiresAt).toLocaleDateString()}`} tone="info" />
+              ) : null}
             </div>
-            <StatusBadge value={caseRecord?.status ?? "packet ready"} />
-          </div>
-          <p>{packet.student_summary}</p>
-          <p className="legal-copy">{packet.legal_disclaimer}</p>
-          <p className="field-help">
-            Portal grant and PDF export controls remain part of the next sharing implementation pass.
-          </p>
-        </section>
+            <ShareControls
+              packetId={packet.id}
+              activeGrantId={activeGrant?.id ?? null}
+              universityName={universityName}
+            />
+          </section>
+        </>
       ) : (
         <section className="panel">
           <p className="eyebrow">Not Ready Yet</p>

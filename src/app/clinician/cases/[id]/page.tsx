@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
 import { ClinicianReviewForm } from "@/components/clinician-review-form";
 import { StatusBadge } from "@/components/status-badge";
+import { runAITriage } from "@/lib/ai/triage";
 import { requireRoles } from "@/lib/auth";
 import {
   formatAnswer,
@@ -13,7 +14,9 @@ import {
   mapScore,
   mapStudentProfile
 } from "@/lib/data";
+import type { AITriageOutput } from "@/lib/domain";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createDocumentSignedUrls } from "@/lib/supabase/storage";
 
 type ClinicianCasePageProps = {
   params: Promise<{ id: string }>;
@@ -54,6 +57,21 @@ export default async function ClinicianCasePage({ params }: ClinicianCasePagePro
   const review = reviewRows?.[0] ? mapClinicianReview(reviewRows[0]) : null;
   const moduleById = new Map(modules.map((module) => [module.id, module]));
 
+  const documents = documentRows ?? [];
+  const documentUrls = await createDocumentSignedUrls(
+    supabase,
+    documents.map((document) => String(document.storage_path))
+  );
+
+  const aiOutput = await loadAITriage(supabase, {
+    caseId: caseRecord.id,
+    currentSummary: caseRecord.currentSummary,
+    status: caseRecord.status,
+    scores,
+    riskFlags,
+    documentsCount: documents.length
+  });
+
   return (
     <AppShell active="/clinician/queue">
       <section className="panel" aria-labelledby="review-title">
@@ -83,14 +101,25 @@ export default async function ClinicianCasePage({ params }: ClinicianCasePagePro
           </article>
           <article>
             <h2>Documents</h2>
-            {documentRows?.length ? (
+            {documents.length ? (
               <ul className="clean-list">
-                {documentRows.map((document) => (
-                  <li key={document.id}>
-                    <strong>{document.file_name}</strong>
-                    <span>{String(document.category).replaceAll("_", " ")}</span>
-                  </li>
-                ))}
+                {documents.map((document) => {
+                  const url = documentUrls.get(String(document.storage_path));
+                  return (
+                    <li key={String(document.id)}>
+                      <strong>
+                        {url ? (
+                          <a href={url} target="_blank" rel="noopener noreferrer">
+                            {String(document.file_name)}
+                          </a>
+                        ) : (
+                          String(document.file_name)
+                        )}
+                      </strong>
+                      <span>{String(document.category).replaceAll("_", " ")}</span>
+                    </li>
+                  );
+                })}
               </ul>
             ) : (
               <p>No documents have been uploaded.</p>
@@ -179,6 +208,49 @@ export default async function ClinicianCasePage({ params }: ClinicianCasePagePro
         </div>
       </section>
 
+      {aiOutput ? (
+        <section className="panel" aria-labelledby="ai-triage-title">
+          <div className="panel-header">
+            <div>
+              <p className="eyebrow">AI Triage (Advisory)</p>
+              <h2 id="ai-triage-title">Suggested priority and reviewer prompts</h2>
+            </div>
+            <StatusBadge value={aiOutput.priority} />
+          </div>
+          <p>{aiOutput.rationale}</p>
+
+          <div className="grid-two">
+            <div>
+              <h3>Recommended reviewer actions</h3>
+              <ul className="check-list">
+                {aiOutput.recommended_reviewer_actions.map((action) => (
+                  <li key={action}>{action}</li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h3>Possible missing information</h3>
+              {aiOutput.missing_information.length ? (
+                <ul className="clean-list">
+                  {aiOutput.missing_information.map((item) => (
+                    <li key={item}>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p>No missing-information prompts were generated.</p>
+              )}
+            </div>
+          </div>
+
+          <p className="legal-copy">
+            This suggestion is advisory only and is never shown to the student. Deterministic safety rules and the
+            reviewing clinician always take precedence. {aiOutput.safety_caveats.join(" ")}
+          </p>
+        </section>
+      ) : null}
+
       <section className="panel" aria-labelledby="review-actions-title">
         <div className="panel-header">
           <div>
@@ -191,4 +263,51 @@ export default async function ClinicianCasePage({ params }: ClinicianCasePagePro
       </section>
     </AppShell>
   );
+}
+
+type SupabaseServerClient = Awaited<ReturnType<typeof createSupabaseServerClient>>;
+
+async function loadAITriage(
+  supabase: SupabaseServerClient,
+  input: {
+    caseId: string;
+    currentSummary: string;
+    status: ReturnType<typeof mapCase>["status"];
+    scores: ReturnType<typeof mapScore>[];
+    riskFlags: ReturnType<typeof mapRiskFlag>[];
+    documentsCount: number;
+  }
+): Promise<AITriageOutput | null> {
+  try {
+    const { data: existing } = await supabase
+      .from("ai_triage_runs")
+      .select("output")
+      .eq("case_id", input.caseId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (existing?.output) {
+      return existing.output as AITriageOutput;
+    }
+
+    const run = await runAITriage({
+      caseRecord: { id: input.caseId, currentSummary: input.currentSummary, status: input.status },
+      scores: input.scores,
+      riskFlags: input.riskFlags,
+      documentsCount: input.documentsCount
+    });
+
+    await supabase.from("ai_triage_runs").insert({
+      case_id: input.caseId,
+      provider: run.provider,
+      model: run.model,
+      input_hash: run.inputHash,
+      output: run.output
+    });
+
+    return run.output;
+  } catch {
+    return null;
+  }
 }

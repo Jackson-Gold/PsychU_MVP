@@ -7,6 +7,8 @@ These accounts are created by `supabase/seed.sql` after all migrations have been
 | Student | `student@example.com` | `PsychU-Demo-2026!` | `/student` |
 | Clinician | `clinician@example.com` | `PsychU-Demo-2026!` | `/clinician/queue` |
 | PsychU admin | `admin@example.com` | `PsychU-Demo-2026!` | `/admin/forms` |
+| University staff | `staff@example.com` | `PsychU-Demo-2026!` | `/university/shared-packets` |
+| University admin | `university@example.com` | `PsychU-Demo-2026!` | `/university/invites` |
 
 ## Seeded Assignment
 
@@ -44,13 +46,18 @@ left join public.memberships m on m.user_id = u.id
 where u.email in (
   'student@example.com',
   'clinician@example.com',
-  'admin@example.com'
+  'admin@example.com',
+  'staff@example.com',
+  'university@example.com'
 )
 order by u.email;
 ```
 
-The query should return three rows, each with `email_confirmed = true` and its
+The query should return five rows, each with `email_confirmed = true` and its
 expected role. The login page will then accept the credentials above.
+
+The university staff and admin accounts are members of the Pilot University
+organization, so they see student-released packets and can manage invites.
 
 For CLI-based setup, authenticate and link the CLI first, then push migrations
 and the seed:

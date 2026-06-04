@@ -456,6 +456,17 @@ h3 {
   box-shadow: var(--shadow-soft);
 }
 
+.metric-card-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.metric-card-link:hover {
+  border-color: var(--moss);
+  transform: translateY(-1px);
+}
+
 .metric-card strong {
   display: block;
   font-family: "Iowan Old Style", "Palatino Linotype", Palatino, serif;
@@ -546,6 +557,24 @@ h3 {
 .clean-list span,
 .timeline-list span {
   color: var(--muted);
+}
+
+.clean-list .notification-unread,
+.notification-unread {
+  margin-left: -12px;
+  margin-right: -12px;
+  padding-left: 12px;
+  padding-right: 12px;
+  border-radius: 12px;
+  background: var(--info-bg);
+}
+
+.clean-list li form {
+  margin-top: 6px;
+}
+
+.clean-list li form .nav-link {
+  padding-left: 0;
 }
 
 .compact-id {
