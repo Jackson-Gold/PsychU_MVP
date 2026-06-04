@@ -26,4 +26,23 @@ describe("QuestionnaireForm", () => {
     expect(forms).toHaveLength(3);
     expect(within(forms[0] as HTMLFormElement).queryByLabelText("Feeling nervous, anxious, or on edge")).toBeNull();
   });
+
+  it("walks the user through one section at a time and blocks advancing past unanswered required questions", () => {
+    const { container } = render(
+      <QuestionnaireForm
+        caseId="50000000-0000-0000-0000-000000000001"
+        modules={assessmentCatalog}
+        responses={[]}
+      />
+    );
+
+    const phq9Form = container.querySelector(".questionnaire-module form") as HTMLFormElement;
+    const scope = within(phq9Form);
+
+    expect(scope.getByText(/Section 1 of/)).toBeInTheDocument();
+
+    fireEvent.click(scope.getByRole("button", { name: "Continue" }));
+
+    expect(scope.getByRole("status")).toHaveTextContent("Please answer");
+  });
 });

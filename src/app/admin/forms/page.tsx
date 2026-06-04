@@ -1,4 +1,5 @@
 import { AdminSaveButton } from "@/components/admin-save-button";
+import { AdminTabs, type AdminTab } from "@/components/admin-tabs";
 import { AppShell } from "@/components/app-shell";
 import { MetricCard } from "@/components/metric-card";
 import { StatusBadge } from "@/components/status-badge";
@@ -55,48 +56,8 @@ export default async function AdminFormsPage() {
       .map((membership) => membership.user_id)
   );
 
-  return (
-    <AppShell active="/admin/forms">
-      <section className="panel" aria-labelledby="admin-title">
-        <div className="panel-header">
-          <div>
-            <p className="eyebrow">PsychU Admin</p>
-            <h1 id="admin-title">MVP control center</h1>
-          </div>
-          <StatusBadge value="audit logged" tone="good" />
-        </div>
-        <p>
-          Admins can manually correct the MVP records below. Every save creates an audit event. Audit logs are
-          intentionally read-only.
-        </p>
-        <div className="metric-grid">
-          <MetricCard label="Users" value={users?.length ?? 0} detail="Public user profiles" />
-          <MetricCard label="Cases" value={cases?.length ?? 0} detail="All student cases" />
-          <MetricCard label="Audit events" value={auditLogs?.length ?? 0} detail="Most recent 100 events" />
-        </div>
-        <form action={syncAssessmentCatalog}>
-          <button className="button button-secondary" type="submit">
-            Sync supplied questionnaire catalog
-          </button>
-        </form>
-        <nav className="admin-jump-nav" aria-label="Admin tool sections">
-          <a href="#users-and-roles">Users and roles</a>
-          <a href="#cases-and-clinician-assignments">Cases</a>
-          <a href="#definitions-and-scoring-configuration">Questionnaires</a>
-          <a href="#responses-and-calculated-scores">Submitted data</a>
-          <a href="#risk-flags-and-clinician-notes">Clinical controls</a>
-          <a href="#recent-admin-and-workflow-events">Audit trail</a>
-        </nav>
-      </section>
-
-      <AdminSection
-        count={users?.length ?? 0}
-        defaultOpen
-        description="Manage account names and role-based access."
-        eyebrow="Access Control"
-        title="Users and roles"
-      >
-        <div className="admin-card-grid">
+  const usersAndRoles = (
+    <div className="admin-card-grid">
           {(users ?? []).map((user) => (
             <article className="admin-card" key={user.user_id}>
               <form action={updateUserProfile}>
@@ -129,16 +90,10 @@ export default async function AdminFormsPage() {
             </article>
           ))}
         </div>
-      </AdminSection>
+  );
 
-      <AdminSection
-        count={cases?.length ?? 0}
-        defaultOpen
-        description="Update case status, ownership, summaries, and next steps."
-        eyebrow="Workflow"
-        title="Cases and clinician assignments"
-      >
-        <div className="admin-card-grid">
+  const casesAndAssignments = (
+    <div className="admin-card-grid">
           {(cases ?? []).map((caseRecord) => (
             <form className="admin-card" action={updateCase} key={caseRecord.id}>
               <input type="hidden" name="case_id" value={caseRecord.id} />
@@ -180,18 +135,14 @@ export default async function AdminFormsPage() {
             </form>
           ))}
         </div>
-      </AdminSection>
+  );
 
-      <AdminSection
-        count={modules?.length ?? 0}
-        description="Advanced editors for questionnaire definitions and scoring rules."
-        eyebrow="Questionnaires"
-        title="Definitions and scoring configuration"
-      >
-        <p className="legal-copy">
-          PHQ-9 and GAD-7 remain marked as pending final permitted-use verification before real student launch.
-        </p>
-        <div className="admin-stack">
+  const questionnaires = (
+    <>
+      <p className="legal-copy">
+        PHQ-9 and GAD-7 remain marked as pending final permitted-use verification before real student launch.
+      </p>
+      <div className="admin-stack">
           {(modules ?? []).map((module) => (
             <details className="admin-record" key={module.id}>
               <summary>
@@ -255,16 +206,12 @@ export default async function AdminFormsPage() {
               </form>
             </details>
           ))}
-        </div>
-      </AdminSection>
+      </div>
+    </>
+  );
 
-      <AdminSection
-        count={(responses?.length ?? 0) + (scores?.length ?? 0)}
-        description="Correct submitted answers and calculated results when necessary."
-        eyebrow="Submitted Data"
-        title="Responses and calculated scores"
-      >
-        <div className="admin-stack">
+  const submittedData = (
+    <div className="admin-stack">
           {(responses ?? []).map((response) => (
             <details className="admin-record" key={response.id}>
               <summary>
@@ -337,15 +284,10 @@ export default async function AdminFormsPage() {
           ))}
           {!responses?.length && !scores?.length ? <p className="empty-state">No submitted responses or scores yet.</p> : null}
         </div>
-      </AdminSection>
+  );
 
-      <AdminSection
-        count={(riskFlags?.length ?? 0) + (reviews?.length ?? 0)}
-        description="Manage safety flags and clinician-authored review records."
-        eyebrow="Clinical Controls"
-        title="Risk flags and clinician notes"
-      >
-        <div className="admin-stack">
+  const clinicalControls = (
+    <div className="admin-stack">
           {(riskFlags ?? []).map((flag) => (
             <details className="admin-record" key={flag.id}>
               <summary>
@@ -439,15 +381,10 @@ export default async function AdminFormsPage() {
           ))}
           {!riskFlags?.length && !reviews?.length ? <p className="empty-state">No risk flags or clinician reviews yet.</p> : null}
         </div>
-      </AdminSection>
+  );
 
-      <AdminSection
-        count={auditLogs?.length ?? 0}
-        description="Read-only history of administrative and workflow changes."
-        eyebrow="Audit Trail"
-        title="Recent admin and workflow events"
-      >
-        <div className="table-scroll">
+  const auditTrail = (
+    <div className="table-scroll">
           <table className="data-table">
           <thead>
             <tr>
@@ -475,44 +412,86 @@ export default async function AdminFormsPage() {
           </tbody>
           </table>
         </div>
-      </AdminSection>
-    </AppShell>
   );
-}
-function AdminSection({
-  count,
-  defaultOpen = false,
-  description,
-  eyebrow,
-  title,
-  children
-}: {
-  count: number;
-  defaultOpen?: boolean;
-  description: string;
-  eyebrow: string;
-  title: string;
-  children: React.ReactNode;
-}) {
-  const id = title.toLowerCase().replaceAll(" ", "-");
+
+  const tabs: AdminTab[] = [
+    {
+      id: "users",
+      label: "Users and roles",
+      eyebrow: "Access control",
+      description: "Manage account names and role-based access.",
+      count: users?.length ?? 0,
+      content: usersAndRoles
+    },
+    {
+      id: "cases",
+      label: "Cases",
+      eyebrow: "Workflow",
+      description: "Update case status, ownership, summaries, and next steps.",
+      count: cases?.length ?? 0,
+      content: casesAndAssignments
+    },
+    {
+      id: "questionnaires",
+      label: "Questionnaires",
+      eyebrow: "Definitions and scoring",
+      description: "Advanced editors for questionnaire definitions and scoring rules.",
+      count: modules?.length ?? 0,
+      content: questionnaires
+    },
+    {
+      id: "submitted",
+      label: "Submitted data",
+      eyebrow: "Responses and scores",
+      description: "Correct submitted answers and calculated results when necessary.",
+      count: (responses?.length ?? 0) + (scores?.length ?? 0),
+      content: submittedData
+    },
+    {
+      id: "clinical",
+      label: "Clinical controls",
+      eyebrow: "Risk flags and reviews",
+      description: "Manage safety flags and clinician-authored review records.",
+      count: (riskFlags?.length ?? 0) + (reviews?.length ?? 0),
+      content: clinicalControls
+    },
+    {
+      id: "audit",
+      label: "Audit trail",
+      eyebrow: "Read-only history",
+      description: "Read-only history of administrative and workflow changes.",
+      count: auditLogs?.length ?? 0,
+      content: auditTrail
+    }
+  ];
 
   return (
-    <details className="panel admin-section" open={defaultOpen ? true : undefined} id={id}>
-      <summary>
-        <span>
-          <span className="eyebrow">{eyebrow}</span>
-          <strong>{title}</strong>
-          <small>{description}</small>
-        </span>
-        <span className="admin-section-meta">
-          <StatusBadge value={`${count} records`} tone="info" />
-          <span className="summary-chevron" aria-hidden="true">
-            +
-          </span>
-        </span>
-      </summary>
-      <div className="admin-section-body">{children}</div>
-    </details>
+    <AppShell active="/admin/forms">
+      <section className="panel" aria-labelledby="admin-title">
+        <div className="panel-header">
+          <div>
+            <p className="eyebrow">PsychU Admin</p>
+            <h1 id="admin-title">MVP control center</h1>
+            <p className="section-intro">
+              Select a section below to manage it. Every save creates an audit event. Audit logs are read-only.
+            </p>
+          </div>
+          <StatusBadge value="audit logged" tone="good" />
+        </div>
+        <div className="metric-grid">
+          <MetricCard label="Users" value={users?.length ?? 0} detail="Public user profiles" />
+          <MetricCard label="Cases" value={cases?.length ?? 0} detail="All student cases" />
+          <MetricCard label="Audit events" value={auditLogs?.length ?? 0} detail="Most recent 100 events" />
+        </div>
+        <form action={syncAssessmentCatalog}>
+          <button className="button button-secondary" type="submit">
+            Sync supplied questionnaire catalog
+          </button>
+        </form>
+      </section>
+
+      <AdminTabs tabs={tabs} />
+    </AppShell>
   );
 }
 

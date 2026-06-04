@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useMemo, useState, type FormEvent } from "react";
+import { useActionState, useMemo, useRef, useState } from "react";
 import {
   submitQuestionnaire,
   type QuestionnaireSubmissionState
@@ -29,6 +29,7 @@ const initialState: QuestionnaireSubmissionState = {
 };
 
 const scale03Labels = ["Not at all", "Several days", "More than half the days", "Nearly every day"];
+const scale04Labels = ["0", "1", "2", "3", "4"];
 
 export function QuestionnaireForm({ caseId, modules, responses }: QuestionnaireFormProps) {
   const completedModuleIds = new Set(responses.map((response) => response.moduleId));
@@ -42,7 +43,8 @@ export function QuestionnaireForm({ caseId, modules, responses }: QuestionnaireF
           <p className="eyebrow">Student Questionnaires</p>
           <h2 id="questionnaire-title">Complete one form at a time</h2>
           <p className="section-intro">
-            Save each questionnaire independently. Your case moves to clinician review after all three are submitted.
+            Each questionnaire is broken into short steps and is saved on its own. Finish whenever you like, then
+            submit that questionnaire by itself.
           </p>
         </div>
         <StatusBadge value={`${completedModuleIds.size} of ${modules.length} submitted`} tone="info" />
@@ -86,7 +88,11 @@ type QuestionnaireModuleFormProps = {
 function QuestionnaireModuleForm({ caseId, defaultOpen, module, response }: QuestionnaireModuleFormProps) {
   const [state, formAction, pending] = useActionState(submitQuestionnaire, initialState);
   const [answers, setAnswers] = useState<AnswerState>(() => seedModuleAnswers(module, response));
-  const sections = groupQuestionsBySection(module.questions);
+  const sections = useMemo(() => groupQuestionsBySection(module.questions), [module.questions]);
+  const [step, setStep] = useState(0);
+  const [clientError, setClientError] = useState<string | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+
   const hasSafetyFlag = useMemo(
     () =>
       module.questions.some((question) =>
@@ -95,9 +101,52 @@ function QuestionnaireModuleForm({ caseId, defaultOpen, module, response }: Ques
     [answers, module]
   );
 
+  const totalSteps = Math.max(sections.length, 1);
+  const safeStep = Math.min(step, totalSteps - 1);
+  const isLastStep = safeStep === totalSteps - 1;
+  const currentSection = sections[safeStep];
+  const stepProgress = Math.round(((safeStep + 1) / totalSteps) * 100);
+
   function updateAnswer(questionId: string, value: AnswerValue) {
     setAnswers((current) => ({ ...current, [answerKey(module.id, questionId)]: value }));
   }
+
+  function goToStep(index: number) {
+    setClientError(null);
+    setStep(Math.max(0, Math.min(index, totalSteps - 1)));
+  }
+
+  function handleContinue() {
+    const missing = firstUnansweredInSection(module.id, currentSection?.[1] ?? [], answers);
+    if (missing) {
+      setClientError(`Please answer: ${missing.label}`);
+      focusQuestion(formRef.current, module.id, missing.id);
+      return;
+    }
+    goToStep(safeStep + 1);
+  }
+
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const incompleteIndex = sections.findIndex(([, questions]) =>
+      Boolean(firstUnansweredInSection(module.id, questions, answers))
+    );
+
+    if (incompleteIndex !== -1) {
+      const missing = firstUnansweredInSection(module.id, sections[incompleteIndex][1], answers);
+      setStep(incompleteIndex);
+      setClientError(missing ? `Please answer: ${missing.label}` : "Please complete the required questions.");
+      window.requestAnimationFrame(() => focusQuestion(formRef.current, module.id, missing?.id));
+      return;
+    }
+
+    setClientError(null);
+    formAction(new FormData(event.currentTarget));
+  }
+
+  const message = clientError
+    ? { status: "error" as const, message: clientError }
+    : state;
 
   return (
     <details className="questionnaire-module" open={defaultOpen ? true : undefined}>
@@ -118,7 +167,7 @@ function QuestionnaireModuleForm({ caseId, defaultOpen, module, response }: Ques
         </span>
       </summary>
 
-      <form className="questionnaire-module-body" action={formAction} onInvalid={revealInvalidField}>
+      <form className="questionnaire-module-body" ref={formRef} onSubmit={handleSubmit}>
         <input type="hidden" name="case_id" value={caseId} />
         <input type="hidden" name="module_id" value={module.id} />
 
@@ -141,49 +190,66 @@ function QuestionnaireModuleForm({ caseId, defaultOpen, module, response }: Ques
           </div>
         ) : null}
 
+        <div className="stepper-header">
+          <p className="stepper-progress-label">
+            Section {safeStep + 1} of {totalSteps}
+            {currentSection ? ` · ${currentSection[0]}` : ""}
+          </p>
+          <div className="progress-track" aria-label={`${stepProgress}% through this questionnaire`}>
+            <span style={{ width: `${stepProgress}%` }} />
+          </div>
+        </div>
+
         <div className="questionnaire-sections">
           {sections.map(([section, questions], index) => (
-            <details className="question-section" open={index === 0 ? true : undefined} key={`${module.id}-${section}`}>
-              <summary>
-                <span>
-                  <strong>{section}</strong>
-                  <small>
-                    {questions.length} {questions.length === 1 ? "question" : "questions"}
-                  </small>
-                </span>
-                <span className="summary-chevron" aria-hidden="true">
-                  +
-                </span>
-              </summary>
-              <fieldset className="form-card">
-                <legend className="sr-only">{section}</legend>
-                {questions.map((question) => {
-                  const value = answers[answerKey(module.id, question.id)];
-                  if (!isQuestionVisible(module.id, question, answers)) return null;
+            <fieldset
+              className="form-card stepper-section"
+              key={`${module.id}-${section}`}
+              hidden={index !== safeStep}
+            >
+              <legend>{section}</legend>
+              {questions.map((question) => {
+                const value = answers[answerKey(module.id, question.id)];
+                if (!isQuestionVisible(module.id, question, answers)) return null;
 
-                  return (
-                    <QuestionField
-                      key={question.id}
-                      moduleId={module.id}
-                      question={question}
-                      value={value}
-                      onChange={(nextValue) => updateAnswer(question.id, nextValue)}
-                    />
-                  );
-                })}
-              </fieldset>
-            </details>
+                return (
+                  <QuestionField
+                    key={question.id}
+                    moduleId={module.id}
+                    question={question}
+                    value={value}
+                    onChange={(nextValue) => updateAnswer(question.id, nextValue)}
+                  />
+                );
+              })}
+            </fieldset>
           ))}
         </div>
 
-        <div className="form-actions">
-          <button className="button button-primary" type="submit" disabled={pending}>
-            {pending ? "Saving..." : response ? "Update submitted questionnaire" : "Save and submit questionnaire"}
+        <div className="stepper-nav">
+          <button
+            className="button button-secondary"
+            type="button"
+            onClick={() => goToStep(safeStep - 1)}
+            disabled={safeStep === 0}
+          >
+            Back
           </button>
-          <p className={state.status === "error" ? "form-message form-message-error" : "form-message"} role="status">
-            {state.message}
-          </p>
+
+          {isLastStep ? (
+            <button className="button button-primary" type="submit" disabled={pending}>
+              {pending ? "Saving..." : response ? "Update and resubmit" : "Save and submit questionnaire"}
+            </button>
+          ) : (
+            <button className="button button-primary" type="button" onClick={handleContinue}>
+              Continue
+            </button>
+          )}
         </div>
+
+        <p className={message.status === "error" ? "form-message form-message-error" : "form-message"} role="status">
+          {message.message}
+        </p>
       </form>
     </details>
   );
@@ -200,20 +266,20 @@ function QuestionField({ moduleId, question, value, onChange }: QuestionFieldPro
   const name = answerFieldName(moduleId, question.id);
   const inputId = `${moduleId}-${question.id}`;
 
-  if (question.type === "scale_0_3") {
+  if (question.type === "scale_0_3" || question.type === "scale_0_4") {
+    const labels = question.type === "scale_0_3" ? scale03Labels : scale04Labels;
     return (
-      <fieldset className="question-group">
+      <fieldset className="question-group" data-question-id={question.id}>
         <legend>{question.label}</legend>
         {question.helpText ? <p className="field-help">{question.helpText}</p> : null}
         <div className="radio-scale">
-          {scale03Labels.map((label, index) => (
+          {labels.map((label, index) => (
             <label key={label}>
               <input
                 name={name}
                 type="radio"
                 value={index}
                 checked={value === index}
-                required={question.required}
                 onChange={() => onChange(index)}
               />
               <span>{label}</span>
@@ -224,53 +290,45 @@ function QuestionField({ moduleId, question, value, onChange }: QuestionFieldPro
     );
   }
 
-  if (question.type === "scale_0_4") {
-    return (
-      <div className="field-row">
-        <label htmlFor={inputId}>{question.label}</label>
-        {question.helpText ? <p className="field-help">{question.helpText}</p> : null}
-        <input
-          id={inputId}
-          name={name}
-          type="range"
-          min="0"
-          max="4"
-          value={typeof value === "number" ? value : 0}
-          onChange={(event) => onChange(Number(event.target.value))}
-        />
-        <output htmlFor={inputId}>Current answer: {typeof value === "number" ? value : 0}</output>
-      </div>
-    );
-  }
-
   if (question.type === "boolean") {
     return (
-      <div className="field-row">
-        <label htmlFor={inputId}>{question.label}</label>
-        <select
-          id={inputId}
-          name={name}
-          value={typeof value === "boolean" ? String(value) : ""}
-          required={question.required}
-          onChange={(event) => onChange(event.target.value === "" ? "" : event.target.value === "true")}
-        >
-          <option value="">Select an answer</option>
-          <option value="true">Yes</option>
-          <option value="false">No</option>
-        </select>
-      </div>
+      <fieldset className="question-group" data-question-id={question.id}>
+        <legend>{question.label}</legend>
+        {question.helpText ? <p className="field-help">{question.helpText}</p> : null}
+        <div className="choice-row">
+          <label>
+            <input
+              name={name}
+              type="radio"
+              value="true"
+              checked={value === true}
+              onChange={() => onChange(true)}
+            />
+            <span>Yes</span>
+          </label>
+          <label>
+            <input
+              name={name}
+              type="radio"
+              value="false"
+              checked={value === false}
+              onChange={() => onChange(false)}
+            />
+            <span>No</span>
+          </label>
+        </div>
+      </fieldset>
     );
   }
 
   if (question.type === "single_select") {
     return (
-      <div className="field-row">
+      <div className="field-row" data-question-id={question.id}>
         <label htmlFor={inputId}>{question.label}</label>
         <select
           id={inputId}
           name={name}
           value={typeof value === "string" ? value : ""}
-          required={question.required}
           onChange={(event) => onChange(event.target.value)}
         >
           <option value="">Select an answer</option>
@@ -287,12 +345,24 @@ function QuestionField({ moduleId, question, value, onChange }: QuestionFieldPro
   if (question.type === "multi_select") {
     const selected = Array.isArray(value) ? value : [];
     return (
-      <fieldset className="question-group">
+      <fieldset className="question-group" data-question-id={question.id}>
         <legend>{question.label}</legend>
         <div className="checkbox-grid">
           {question.options?.map((option) => (
             <label key={option}>
-              <input name={name} type="checkbox" value={option} defaultChecked={selected.includes(option)} />
+              <input
+                name={name}
+                type="checkbox"
+                value={option}
+                checked={selected.includes(option)}
+                onChange={(event) =>
+                  onChange(
+                    event.target.checked
+                      ? [...selected, option]
+                      : selected.filter((item) => item !== option)
+                  )
+                }
+              />
               <span>{option}</span>
             </label>
           ))}
@@ -303,31 +373,31 @@ function QuestionField({ moduleId, question, value, onChange }: QuestionFieldPro
 
   if (question.type === "text") {
     return (
-      <div className="field-row">
+      <div className="field-row" data-question-id={question.id}>
         <label htmlFor={inputId}>{question.label}</label>
         {question.helpText ? <p className="field-help">{question.helpText}</p> : null}
         <textarea
           id={inputId}
           name={name}
           rows={4}
-          required={question.required}
           placeholder={question.placeholder}
-          defaultValue={typeof value === "string" ? value : ""}
+          value={typeof value === "string" ? value : ""}
+          onChange={(event) => onChange(event.target.value)}
         />
       </div>
     );
   }
 
   return (
-    <div className="field-row">
+    <div className="field-row" data-question-id={question.id}>
       <label htmlFor={inputId}>{question.label}</label>
       <input
         id={inputId}
         name={name}
         type={question.type}
-        required={question.required}
         placeholder={question.placeholder}
-        defaultValue={typeof value === "string" ? value : ""}
+        value={typeof value === "string" ? value : ""}
+        onChange={(event) => onChange(event.target.value)}
       />
     </div>
   );
@@ -375,6 +445,27 @@ function isQuestionVisible(moduleId: string, question: AssessmentQuestion, answe
   return true;
 }
 
+function firstUnansweredInSection(
+  moduleId: string,
+  questions: AssessmentQuestion[],
+  answers: AnswerState
+): AssessmentQuestion | null {
+  for (const question of questions) {
+    if (!question.required) continue;
+    if (!isQuestionVisible(moduleId, question, answers)) continue;
+
+    const value = answers[answerKey(moduleId, question.id)];
+    const empty =
+      value === undefined ||
+      value === "" ||
+      (Array.isArray(value) && value.length === 0);
+
+    if (empty) return question;
+  }
+
+  return null;
+}
+
 function matchesRiskTrigger(question: AssessmentQuestion, answer: AnswerValue | undefined) {
   if (!question.riskTrigger) return false;
   if (question.riskTrigger.equals !== undefined && answer === question.riskTrigger.equals) return true;
@@ -391,11 +482,13 @@ function matchesRiskTrigger(question: AssessmentQuestion, answer: AnswerValue | 
   return false;
 }
 
-function revealInvalidField(event: FormEvent<HTMLFormElement>) {
-  let details = (event.target as HTMLElement).closest("details");
-
-  while (details) {
-    details.open = true;
-    details = details.parentElement?.closest("details") ?? null;
+function focusQuestion(form: HTMLFormElement | null, moduleId: string, questionId?: string) {
+  if (!form || !questionId) return;
+  const container = form.querySelector<HTMLElement>(`[data-question-id="${questionId}"]`);
+  if (!container) return;
+  if (typeof container.scrollIntoView === "function") {
+    container.scrollIntoView({ behavior: "smooth", block: "center" });
   }
+  const focusable = container.querySelector<HTMLElement>("input, select, textarea");
+  focusable?.focus();
 }

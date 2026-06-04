@@ -12,11 +12,31 @@ These accounts are created by `supabase/seed.sql` after all migrations have been
 
 ## Seeded Assignment
 
-- The student account has one draft screening case.
-- The case is assigned to the clinician account.
-- After the student submits the NeuropsychU intake, PHQ-9, and GAD-7, the case appears in the clinician queue.
-- The admin account can view and manually edit users, roles, assignments, questionnaire definitions, responses, scores, risk flags, clinician notes, and case statuses.
+- The student account (`student@example.com`, Maya Chen) has one draft screening case for walking through the questionnaire flow.
+- All demo cases are assigned to the clinician account, so the clinician queue and admin control center look realistic.
+- After a student submits the NeuropsychU intake, PHQ-9, and GAD-7, the case appears in the clinician queue with auto-calculated scores and deterministic risk flags.
+- The admin account can view and manually edit users, roles, assignments, questionnaire definitions, responses, scores, risk flags, clinician notes, and case statuses from a single tabbed control center.
 - Admin changes are written to `audit_logs`.
+
+### Additional demo students (clinician + admin realism)
+
+These accounts share the same password and are members of Pilot University. They
+exist to populate the clinician queue and admin views with completed, scored
+cases across the full case lifecycle:
+
+| Student | Email | Case state |
+| --- | --- | --- |
+| Jordan Lee | `jordan.lee@pilot.edu` | Submitted, awaiting first review (PHQ-9 mild, GAD-7 moderate) |
+| Sam Rivera | `sam.rivera@pilot.edu` | Urgent flagged — PHQ-9 item 9 endorsed (severe depression/anxiety) |
+| Taylor Brooks | `taylor.brooks@pilot.edu` | Under review — clinician drafting notes |
+| Alex Nguyen | `alex.nguyen@pilot.edu` | Packet ready — approved review, packet awaiting student sharing |
+| Riley Okafor | `riley.okafor@pilot.edu` | Shared — packet released to Pilot University accessibility office |
+| Casey Diaz | `casey.diaz@pilot.edu` | Needs info — clinician requested prior records |
+
+Inserting the seeded responses fires the `process_assessment_response` trigger,
+which auto-creates scores, deterministic risk flags, audit entries, and
+notifications. Final case statuses are then set explicitly, so re-running the
+seed is safe.
 
 ## Important
 

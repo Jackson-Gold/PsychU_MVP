@@ -437,3 +437,196 @@ on conflict (slug, version) do update set
   scoring_config = excluded.scoring_config,
   questions = excluded.questions;
 -- END GENERATED ASSESSMENT CATALOG
+
+-- ===========================================================================
+-- Additional demo students, completed cases, reviews, packets, and shares.
+-- These make the clinician queue and admin control center realistic. All are
+-- assigned to the demo clinician (clinician@example.com) and Pilot University.
+-- Inserting assessment_responses fires public.process_assessment_response,
+-- which auto-creates scores, deterministic risk flags, audit logs, and
+-- notifications. Case statuses are then set explicitly (idempotent on re-run).
+-- ===========================================================================
+
+insert into auth.users (
+  instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
+  raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
+  confirmation_token, email_change, email_change_token_new, recovery_token
+)
+values
+  ('00000000-0000-0000-0000-000000000000', '10000000-0000-0000-0000-000000000011', 'authenticated', 'authenticated', 'jordan.lee@pilot.edu', crypt('PsychU-Demo-2026!', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{"full_name":"Jordan Lee"}'::jsonb, now(), now(), '', '', '', ''),
+  ('00000000-0000-0000-0000-000000000000', '10000000-0000-0000-0000-000000000012', 'authenticated', 'authenticated', 'sam.rivera@pilot.edu', crypt('PsychU-Demo-2026!', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{"full_name":"Sam Rivera"}'::jsonb, now(), now(), '', '', '', ''),
+  ('00000000-0000-0000-0000-000000000000', '10000000-0000-0000-0000-000000000013', 'authenticated', 'authenticated', 'taylor.brooks@pilot.edu', crypt('PsychU-Demo-2026!', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{"full_name":"Taylor Brooks"}'::jsonb, now(), now(), '', '', '', ''),
+  ('00000000-0000-0000-0000-000000000000', '10000000-0000-0000-0000-000000000014', 'authenticated', 'authenticated', 'alex.nguyen@pilot.edu', crypt('PsychU-Demo-2026!', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{"full_name":"Alex Nguyen"}'::jsonb, now(), now(), '', '', '', ''),
+  ('00000000-0000-0000-0000-000000000000', '10000000-0000-0000-0000-000000000015', 'authenticated', 'authenticated', 'riley.okafor@pilot.edu', crypt('PsychU-Demo-2026!', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{"full_name":"Riley Okafor"}'::jsonb, now(), now(), '', '', '', ''),
+  ('00000000-0000-0000-0000-000000000000', '10000000-0000-0000-0000-000000000016', 'authenticated', 'authenticated', 'casey.diaz@pilot.edu', crypt('PsychU-Demo-2026!', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{"full_name":"Casey Diaz"}'::jsonb, now(), now(), '', '', '', '')
+on conflict (id) do update set
+  email = excluded.email,
+  encrypted_password = excluded.encrypted_password,
+  email_confirmed_at = excluded.email_confirmed_at,
+  raw_app_meta_data = excluded.raw_app_meta_data,
+  raw_user_meta_data = excluded.raw_user_meta_data,
+  updated_at = now();
+
+insert into auth.identities (
+  id, user_id, provider_id, identity_data, provider, last_sign_in_at, created_at, updated_at
+)
+values
+  ('20000000-0000-0000-0000-000000000011', '10000000-0000-0000-0000-000000000011', '10000000-0000-0000-0000-000000000011', '{"sub":"10000000-0000-0000-0000-000000000011","email":"jordan.lee@pilot.edu"}'::jsonb, 'email', now(), now(), now()),
+  ('20000000-0000-0000-0000-000000000012', '10000000-0000-0000-0000-000000000012', '10000000-0000-0000-0000-000000000012', '{"sub":"10000000-0000-0000-0000-000000000012","email":"sam.rivera@pilot.edu"}'::jsonb, 'email', now(), now(), now()),
+  ('20000000-0000-0000-0000-000000000013', '10000000-0000-0000-0000-000000000013', '10000000-0000-0000-0000-000000000013', '{"sub":"10000000-0000-0000-0000-000000000013","email":"taylor.brooks@pilot.edu"}'::jsonb, 'email', now(), now(), now()),
+  ('20000000-0000-0000-0000-000000000014', '10000000-0000-0000-0000-000000000014', '10000000-0000-0000-0000-000000000014', '{"sub":"10000000-0000-0000-0000-000000000014","email":"alex.nguyen@pilot.edu"}'::jsonb, 'email', now(), now(), now()),
+  ('20000000-0000-0000-0000-000000000015', '10000000-0000-0000-0000-000000000015', '10000000-0000-0000-0000-000000000015', '{"sub":"10000000-0000-0000-0000-000000000015","email":"riley.okafor@pilot.edu"}'::jsonb, 'email', now(), now(), now()),
+  ('20000000-0000-0000-0000-000000000016', '10000000-0000-0000-0000-000000000016', '10000000-0000-0000-0000-000000000016', '{"sub":"10000000-0000-0000-0000-000000000016","email":"casey.diaz@pilot.edu"}'::jsonb, 'email', now(), now(), now())
+on conflict (provider_id, provider) do update set
+  identity_data = excluded.identity_data,
+  updated_at = now();
+
+insert into public.memberships (id, user_id, organization_id, role)
+values
+  ('30000000-0000-0000-0000-000000000011', '10000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000002', 'student'),
+  ('30000000-0000-0000-0000-000000000012', '10000000-0000-0000-0000-000000000012', '00000000-0000-0000-0000-000000000002', 'student'),
+  ('30000000-0000-0000-0000-000000000013', '10000000-0000-0000-0000-000000000013', '00000000-0000-0000-0000-000000000002', 'student'),
+  ('30000000-0000-0000-0000-000000000014', '10000000-0000-0000-0000-000000000014', '00000000-0000-0000-0000-000000000002', 'student'),
+  ('30000000-0000-0000-0000-000000000015', '10000000-0000-0000-0000-000000000015', '00000000-0000-0000-0000-000000000002', 'student'),
+  ('30000000-0000-0000-0000-000000000016', '10000000-0000-0000-0000-000000000016', '00000000-0000-0000-0000-000000000002', 'student')
+on conflict (user_id, organization_id, role) do nothing;
+
+insert into public.student_profiles (
+  id, user_id, organization_id, preferred_name, date_of_birth, year_in_school, major,
+  prior_accommodations, accessibility_needs
+)
+values
+  ('40000000-0000-0000-0000-000000000011', '10000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000002', 'Jordan', '2004-09-02', 'Junior', 'Computer Science', array['Extended time on standardized exams'], array['Difficulty sustaining attention', 'Test anxiety']),
+  ('40000000-0000-0000-0000-000000000012', '10000000-0000-0000-0000-000000000012', '00000000-0000-0000-0000-000000000002', 'Sam', '2003-12-20', 'Senior', 'Psychology', array['Reduced-distraction testing'], array['Low mood', 'Sleep disruption']),
+  ('40000000-0000-0000-0000-000000000013', '10000000-0000-0000-0000-000000000013', '00000000-0000-0000-0000-000000000002', 'Taylor', '2005-05-11', 'Sophomore', 'Nursing', array[]::text[], array['Working memory concerns']),
+  ('40000000-0000-0000-0000-000000000014', '10000000-0000-0000-0000-000000000014', '00000000-0000-0000-0000-000000000002', 'Alex', '2002-07-30', 'Graduate or professional school', 'Law (JD)', array['Extended time', 'Separate testing room'], array['Slow reading speed', 'Processing speed concerns']),
+  ('40000000-0000-0000-0000-000000000015', '10000000-0000-0000-0000-000000000015', '00000000-0000-0000-0000-000000000002', 'Riley', '2004-02-14', 'Junior', 'Mechanical Engineering', array['Note-taking support'], array['Executive functioning support']),
+  ('40000000-0000-0000-0000-000000000016', '10000000-0000-0000-0000-000000000016', '00000000-0000-0000-0000-000000000002', 'Casey', '2005-11-03', 'Freshman', 'Undeclared', array[]::text[], array['Organization and planning support'])
+on conflict (user_id, organization_id) do update set
+  preferred_name = excluded.preferred_name,
+  year_in_school = excluded.year_in_school,
+  major = excluded.major,
+  prior_accommodations = excluded.prior_accommodations,
+  accessibility_needs = excluded.accessibility_needs;
+
+insert into public.cases (
+  id, student_user_id, organization_id, status, assigned_clinician_user_id, current_summary, next_step
+)
+values
+  ('50000000-0000-0000-0000-000000000011', '10000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000002', 'draft', '10000000-0000-0000-0000-000000000002', 'All three questionnaires submitted; awaiting first clinician review.', 'Assigned PsychU clinician review pending.'),
+  ('50000000-0000-0000-0000-000000000012', '10000000-0000-0000-0000-000000000012', '00000000-0000-0000-0000-000000000002', 'draft', '10000000-0000-0000-0000-000000000002', 'Screening submitted with an elevated PHQ-9 safety response.', 'Prompt clinician safety follow-up required.'),
+  ('50000000-0000-0000-0000-000000000013', '10000000-0000-0000-0000-000000000013', '00000000-0000-0000-0000-000000000002', 'draft', '10000000-0000-0000-0000-000000000002', 'Clinician review in progress for attention and anxiety concerns.', 'Clinician drafting review and recommended next steps.'),
+  ('50000000-0000-0000-0000-000000000014', '10000000-0000-0000-0000-000000000014', '00000000-0000-0000-0000-000000000002', 'draft', '10000000-0000-0000-0000-000000000002', 'Review approved; triage packet ready for the student to share.', 'Student decides whether to release the packet to their university.'),
+  ('50000000-0000-0000-0000-000000000015', '10000000-0000-0000-0000-000000000015', '00000000-0000-0000-0000-000000000002', 'draft', '10000000-0000-0000-0000-000000000002', 'Reviewed packet released to Pilot University accessibility office.', 'University accessibility office reviewing the shared packet.'),
+  ('50000000-0000-0000-0000-000000000016', '10000000-0000-0000-0000-000000000016', '00000000-0000-0000-0000-000000000002', 'draft', '10000000-0000-0000-0000-000000000002', 'Clinician requested additional documentation before proceeding.', 'Waiting on prior evaluation records from the student.')
+on conflict (id) do update set
+  assigned_clinician_user_id = excluded.assigned_clinician_user_id,
+  current_summary = excluded.current_summary,
+  next_step = excluded.next_step;
+
+insert into public.assessment_responses (id, case_id, module_id, module_version, answers)
+values
+  -- Jordan Lee: mild depression, moderate anxiety
+  ('51000000-0000-0000-0000-000000000111', '50000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000110', '1.0.0', '{"phq9_1":1,"phq9_2":1,"phq9_3":1,"phq9_4":1,"phq9_5":1,"phq9_6":1,"phq9_7":1,"phq9_8":0,"phq9_9":0,"phq9_difficulty":"Somewhat difficult"}'::jsonb),
+  ('51000000-0000-0000-0000-000000000112', '50000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000111', '1.0.0', '{"gad7_1":2,"gad7_2":2,"gad7_3":2,"gad7_4":1,"gad7_5":1,"gad7_6":1,"gad7_7":1,"gad7_difficulty":"Somewhat difficult"}'::jsonb),
+  ('51000000-0000-0000-0000-000000000113', '50000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000112', '2026-05-25', '{"referral_source":"University accessibility office","full_name":"Jordan Lee","year_in_school":"Junior in college","present_concerns":"Trouble focusing during long lectures and timed exams over the past year.","evaluation_goals":"Understand my attention and anxiety and identify supports.","family_adhd":true,"family_adhd_details":"Sibling diagnosed with ADHD.","family_anxiety":true,"developmental_challenges":false,"medical_conditions":"None significant.","current_medications":"None.","sleeping_patterns":"Difficulty falling asleep before exams.","alcohol_frequency":"1-2 days","cannabis_frequency":"Not at all - 0 days","adhd_concern":true,"adhd_concern_details":"Cannot sustain focus during long reading.","anxiety_concern":true,"current_school_level":"Junior in college","current_college_accommodations":false,"current_college_accommodations_details":"Considering requesting extended time.","current_college_grades":"Mostly B grades; weaker in timed STEM exams.","strengths":"Creative and persistent.","weaknesses":"Time management under pressure."}'::jsonb),
+  -- Sam Rivera: severe depression with PHQ-9 item 9 endorsed (urgent), severe anxiety
+  ('51000000-0000-0000-0000-000000000121', '50000000-0000-0000-0000-000000000012', '00000000-0000-0000-0000-000000000110', '1.0.0', '{"phq9_1":3,"phq9_2":3,"phq9_3":3,"phq9_4":2,"phq9_5":2,"phq9_6":3,"phq9_7":2,"phq9_8":3,"phq9_9":2,"phq9_difficulty":"Extremely difficult"}'::jsonb),
+  ('51000000-0000-0000-0000-000000000122', '50000000-0000-0000-0000-000000000012', '00000000-0000-0000-0000-000000000111', '1.0.0', '{"gad7_1":3,"gad7_2":3,"gad7_3":3,"gad7_4":2,"gad7_5":2,"gad7_6":3,"gad7_7":2,"gad7_difficulty":"Extremely difficult"}'::jsonb),
+  ('51000000-0000-0000-0000-000000000123', '50000000-0000-0000-0000-000000000012', '00000000-0000-0000-0000-000000000112', '2026-05-25', '{"referral_source":"Self-referred","full_name":"Sam Rivera","year_in_school":"Senior in college","present_concerns":"Persistent low mood, hopelessness, and trouble functioning over the last two months.","evaluation_goals":"Get help understanding my mood and find the right support.","family_mood":true,"family_mood_details":"Parent with depression.","developmental_challenges":false,"medical_conditions":"None significant.","current_medications":"None.","sleeping_patterns":"Waking very early and unable to return to sleep.","alcohol_frequency":"3-4 days","cannabis_frequency":"1-2 days","mood_concern":true,"mood_concern_details":"Feeling hopeless most days.","anxiety_concern":true,"current_school_level":"Senior in college","current_college_accommodations":false,"current_college_accommodations_details":"None yet.","current_college_grades":"Recent decline across courses.","strengths":"Empathetic and thoughtful.","weaknesses":"Low energy and motivation right now."}'::jsonb),
+  -- Taylor Brooks: moderate depression, mild anxiety
+  ('51000000-0000-0000-0000-000000000131', '50000000-0000-0000-0000-000000000013', '00000000-0000-0000-0000-000000000110', '1.0.0', '{"phq9_1":2,"phq9_2":2,"phq9_3":1,"phq9_4":2,"phq9_5":1,"phq9_6":1,"phq9_7":1,"phq9_8":1,"phq9_9":0,"phq9_difficulty":"Very difficult"}'::jsonb),
+  ('51000000-0000-0000-0000-000000000132', '50000000-0000-0000-0000-000000000013', '00000000-0000-0000-0000-000000000111', '1.0.0', '{"gad7_1":1,"gad7_2":1,"gad7_3":1,"gad7_4":1,"gad7_5":1,"gad7_6":1,"gad7_7":1,"gad7_difficulty":"Somewhat difficult"}'::jsonb),
+  ('51000000-0000-0000-0000-000000000133', '50000000-0000-0000-0000-000000000013', '00000000-0000-0000-0000-000000000112', '2026-05-25', '{"referral_source":"Academic advisor","full_name":"Taylor Brooks","year_in_school":"Sophomore in college","present_concerns":"Forgetfulness and trouble keeping track of assignments and clinical rotations.","evaluation_goals":"Find out why working memory feels so unreliable.","family_adhd":true,"developmental_challenges":false,"medical_conditions":"Mild asthma.","current_medications":"Albuterol as needed.","sleeping_patterns":"Generally adequate.","alcohol_frequency":"Not at all - 0 days","cannabis_frequency":"Not at all - 0 days","adhd_concern":true,"adhd_concern_details":"Losing track of multi-step tasks.","anxiety_concern":false,"current_school_level":"Sophomore in college","current_college_accommodations":false,"current_college_accommodations_details":"None currently.","current_college_grades":"Solid grades but inconsistent.","strengths":"Compassionate and hardworking.","weaknesses":"Organization and follow-through."}'::jsonb),
+  -- Alex Nguyen: mild depression, minimal anxiety (packet ready)
+  ('51000000-0000-0000-0000-000000000141', '50000000-0000-0000-0000-000000000014', '00000000-0000-0000-0000-000000000110', '1.0.0', '{"phq9_1":1,"phq9_2":1,"phq9_3":1,"phq9_4":1,"phq9_5":0,"phq9_6":1,"phq9_7":0,"phq9_8":0,"phq9_9":0,"phq9_difficulty":"Somewhat difficult"}'::jsonb),
+  ('51000000-0000-0000-0000-000000000142', '50000000-0000-0000-0000-000000000014', '00000000-0000-0000-0000-000000000111', '1.0.0', '{"gad7_1":0,"gad7_2":1,"gad7_3":1,"gad7_4":0,"gad7_5":0,"gad7_6":1,"gad7_7":0,"gad7_difficulty":"Not difficult at all"}'::jsonb),
+  ('51000000-0000-0000-0000-000000000143', '50000000-0000-0000-0000-000000000014', '00000000-0000-0000-0000-000000000112', '2026-05-25', '{"referral_source":"Disability services","full_name":"Alex Nguyen","year_in_school":"Graduate or professional school","present_concerns":"Slow reading speed making timed law-school exams difficult.","evaluation_goals":"Document processing speed needs for accommodations.","family_learning":true,"developmental_challenges":false,"medical_conditions":"None.","current_medications":"None.","sleeping_patterns":"Adequate.","alcohol_frequency":"1-2 days","cannabis_frequency":"Not at all - 0 days","prior_neuropsych_eval":true,"prior_neuropsych_eval_details":"Evaluated in high school; slow processing speed noted.","current_school_level":"Graduate or professional school","graduate_program_details":"Law (JD).","current_college_accommodations":true,"current_college_accommodations_details":"Extended time in undergrad.","current_college_grades":"Strong grades except timed exams.","strengths":"Analytical and diligent.","weaknesses":"Reading speed under time limits."}'::jsonb),
+  -- Riley Okafor: minimal depression, mild anxiety (shared)
+  ('51000000-0000-0000-0000-000000000151', '50000000-0000-0000-0000-000000000015', '00000000-0000-0000-0000-000000000110', '1.0.0', '{"phq9_1":1,"phq9_2":0,"phq9_3":1,"phq9_4":0,"phq9_5":1,"phq9_6":0,"phq9_7":0,"phq9_8":0,"phq9_9":0,"phq9_difficulty":"Not difficult at all"}'::jsonb),
+  ('51000000-0000-0000-0000-000000000152', '50000000-0000-0000-0000-000000000015', '00000000-0000-0000-0000-000000000111', '1.0.0', '{"gad7_1":1,"gad7_2":1,"gad7_3":1,"gad7_4":1,"gad7_5":0,"gad7_6":1,"gad7_7":0,"gad7_difficulty":"Somewhat difficult"}'::jsonb),
+  ('51000000-0000-0000-0000-000000000153', '50000000-0000-0000-0000-000000000015', '00000000-0000-0000-0000-000000000112', '2026-05-25', '{"referral_source":"University accessibility office","full_name":"Riley Okafor","year_in_school":"Junior in college","present_concerns":"Difficulty planning and starting long engineering projects.","evaluation_goals":"Identify executive functioning supports.","family_adhd":true,"developmental_challenges":false,"medical_conditions":"None.","current_medications":"None.","sleeping_patterns":"Adequate.","alcohol_frequency":"Not at all - 0 days","cannabis_frequency":"Not at all - 0 days","adhd_concern":true,"adhd_concern_details":"Procrastination and task initiation issues.","anxiety_concern":true,"current_school_level":"Junior in college","current_college_accommodations":false,"current_college_accommodations_details":"None yet.","current_college_grades":"Good when started early.","strengths":"Strong problem solver.","weaknesses":"Task initiation and planning."}'::jsonb),
+  -- Casey Diaz: moderate depression, moderate anxiety (needs info)
+  ('51000000-0000-0000-0000-000000000161', '50000000-0000-0000-0000-000000000016', '00000000-0000-0000-0000-000000000110', '1.0.0', '{"phq9_1":2,"phq9_2":1,"phq9_3":2,"phq9_4":2,"phq9_5":1,"phq9_6":1,"phq9_7":2,"phq9_8":1,"phq9_9":0,"phq9_difficulty":"Very difficult"}'::jsonb),
+  ('51000000-0000-0000-0000-000000000162', '50000000-0000-0000-0000-000000000016', '00000000-0000-0000-0000-000000000111', '1.0.0', '{"gad7_1":2,"gad7_2":2,"gad7_3":2,"gad7_4":1,"gad7_5":1,"gad7_6":1,"gad7_7":1,"gad7_difficulty":"Very difficult"}'::jsonb),
+  ('51000000-0000-0000-0000-000000000163', '50000000-0000-0000-0000-000000000016', '00000000-0000-0000-0000-000000000112', '2026-05-25', '{"referral_source":"Resident advisor","full_name":"Casey Diaz","year_in_school":"Freshman in college","present_concerns":"Struggling to adjust to college workload and stay organized.","evaluation_goals":"Understand whether ADHD is contributing.","family_adhd":false,"developmental_challenges":true,"developmental_challenges_details":"Early speech delay.","medical_conditions":"None.","current_medications":"None.","sleeping_patterns":"Irregular schedule.","alcohol_frequency":"1-2 days","cannabis_frequency":"Not at all - 0 days","adhd_concern":true,"adhd_concern_details":"Cannot keep track of deadlines.","anxiety_concern":true,"current_school_level":"Freshman in college","school_district_eval":true,"school_district_eval_details":"Evaluated in middle school; records not on hand.","current_college_accommodations":false,"current_college_accommodations_details":"None.","current_college_grades":"Mixed; struggling in first semester.","strengths":"Curious and motivated.","weaknesses":"Organization and planning."}'::jsonb)
+on conflict (case_id, module_id, module_version) do nothing;
+
+insert into public.clinician_reviews (
+  id, case_id, reviewer_user_id, status, outcome, reviewer_notes, student_facing_summary, requested_documents
+)
+values
+  ('60000000-0000-0000-0000-000000000013', '50000000-0000-0000-0000-000000000013', '10000000-0000-0000-0000-000000000002', 'draft', 'schedule_psychu_review', 'Moderate depressive symptoms with reported working-memory difficulties. Drafting recommendation for a focused PsychU review session.', 'Thanks for completing your questionnaires. A PsychU clinician is reviewing your responses and will follow up with next steps.', array[]::text[]),
+  ('60000000-0000-0000-0000-000000000014', '50000000-0000-0000-0000-000000000014', '10000000-0000-0000-0000-000000000002', 'approved', 'share_with_university', 'Mild mood symptoms; primary concern is processing speed affecting timed exams. Prior evaluation supports accommodation request. Packet prepared for student-controlled sharing.', 'Your review is complete. We prepared a summary you can choose to share with your university accessibility office to support accommodations.', array[]::text[]),
+  ('60000000-0000-0000-0000-000000000015', '50000000-0000-0000-0000-000000000015', '10000000-0000-0000-0000-000000000002', 'approved', 'share_with_university', 'Executive functioning concerns consistent with reported task-initiation difficulties. Packet approved; student elected to share with their university.', 'Your review is complete and you chose to share your summary with your university accessibility office. You can revoke access at any time.', array[]::text[]),
+  ('60000000-0000-0000-0000-000000000016', '50000000-0000-0000-0000-000000000016', '10000000-0000-0000-0000-000000000002', 'draft', 'request_more_docs', 'Need prior school-district evaluation records before finalizing impressions. Requested documentation from the student.', 'Thanks for your submission. Before we can finish your review, please upload any prior evaluation or school records you have available.', array['Prior school-district evaluation', 'Any IEP or 504 plan documentation'])
+on conflict (id) do update set
+  status = excluded.status,
+  outcome = excluded.outcome,
+  reviewer_notes = excluded.reviewer_notes,
+  student_facing_summary = excluded.student_facing_summary,
+  requested_documents = excluded.requested_documents;
+
+insert into public.triage_packets (
+  id, case_id, review_id, version, approved_by_user_id, student_summary, university_summary,
+  scores, risk_flags, document_list, recommended_next_steps, legal_disclaimer
+)
+values
+  (
+    '70000000-0000-0000-0000-000000000014', '50000000-0000-0000-0000-000000000014', '60000000-0000-0000-0000-000000000014', 1, '10000000-0000-0000-0000-000000000002',
+    'Your PsychU review is complete. Screening suggests mild mood symptoms and a primary concern with reading/processing speed on timed exams. You can share this summary with your university to support an accommodations request.',
+    'A PsychU clinician reviewed this student''s screening. Findings support consideration of testing accommodations (e.g., extended time) related to processing speed. This summary is screening-based and not a diagnosis.',
+    '[{"label":"PHQ-9 total score","value":6,"maxValue":27,"severity":"mild","interpretation":"Mild depression severity"},{"label":"GAD-7 total score","value":3,"maxValue":21,"severity":"minimal","interpretation":"Minimal anxiety severity"}]'::jsonb,
+    '[]'::jsonb,
+    '[{"category":"prior_evaluation","fileName":"high-school-evaluation.pdf"}]'::jsonb,
+    array['Consider extended time on timed examinations', 'Forward to university accessibility office if the student consents'],
+    'This summary supports screening and accommodation conversations only. It is not a diagnosis and does not establish clinical care. A qualified professional must interpret results in context.'
+  ),
+  (
+    '70000000-0000-0000-0000-000000000015', '50000000-0000-0000-0000-000000000015', '60000000-0000-0000-0000-000000000015', 1, '10000000-0000-0000-0000-000000000002',
+    'Your PsychU review is complete. Screening suggests executive functioning and task-initiation difficulties with low mood and mild anxiety. You chose to share this summary with your university accessibility office.',
+    'A PsychU clinician reviewed this student''s screening. Findings are consistent with executive functioning support needs. This summary is screening-based and not a diagnosis.',
+    '[{"label":"PHQ-9 total score","value":4,"maxValue":27,"severity":"minimal","interpretation":"None-minimal depression severity"},{"label":"GAD-7 total score","value":5,"maxValue":21,"severity":"mild","interpretation":"Mild anxiety severity"}]'::jsonb,
+    '[]'::jsonb,
+    '[]'::jsonb,
+    array['Consider executive functioning coaching or supports', 'Discuss planning/organization accommodations with the accessibility office'],
+    'This summary supports screening and accommodation conversations only. It is not a diagnosis and does not establish clinical care. A qualified professional must interpret results in context.'
+  )
+on conflict (id) do update set
+  student_summary = excluded.student_summary,
+  university_summary = excluded.university_summary,
+  scores = excluded.scores,
+  risk_flags = excluded.risk_flags,
+  document_list = excluded.document_list,
+  recommended_next_steps = excluded.recommended_next_steps,
+  legal_disclaimer = excluded.legal_disclaimer;
+
+insert into public.uploaded_documents (
+  id, case_id, uploaded_by_user_id, storage_path, file_name, content_type, size_bytes, category
+)
+values
+  ('90000000-0000-0000-0000-000000000014', '50000000-0000-0000-0000-000000000014', '10000000-0000-0000-0000-000000000014', '50000000-0000-0000-0000-000000000014/high-school-evaluation.pdf', 'high-school-evaluation.pdf', 'application/pdf', 248000, 'prior_evaluation'),
+  ('90000000-0000-0000-0000-000000000015', '50000000-0000-0000-0000-000000000015', '10000000-0000-0000-0000-000000000015', '50000000-0000-0000-0000-000000000015/unofficial-transcript.pdf', 'unofficial-transcript.pdf', 'application/pdf', 132000, 'academic_record')
+on conflict (storage_path) do nothing;
+
+insert into public.share_grants (
+  id, packet_id, student_user_id, organization_id, recipient_user_id, status, expires_at
+)
+values
+  ('80000000-0000-0000-0000-000000000015', '70000000-0000-0000-0000-000000000015', '10000000-0000-0000-0000-000000000015', '00000000-0000-0000-0000-000000000002', null, 'active', now() + interval '90 days')
+on conflict (id) do nothing;
+
+-- Explicit, idempotent final case statuses (independent of trigger timing/re-runs).
+update public.cases set status = 'submitted' where id = '50000000-0000-0000-0000-000000000011';
+update public.cases set status = 'urgent_flagged' where id = '50000000-0000-0000-0000-000000000012';
+update public.cases set status = 'under_review' where id = '50000000-0000-0000-0000-000000000013';
+update public.cases set status = 'packet_ready' where id = '50000000-0000-0000-0000-000000000014';
+update public.cases set status = 'shared' where id = '50000000-0000-0000-0000-000000000015';
+update public.cases set status = 'needs_info' where id = '50000000-0000-0000-0000-000000000016';
+
+-- A few student-facing notifications for demo realism (trigger-created ones also exist).
+insert into public.notifications (id, user_id, type, title, body, read_at)
+values
+  ('a0000000-0000-0000-0000-000000000014', '10000000-0000-0000-0000-000000000014', 'case_status', 'Your review is ready to share', 'Your PsychU review is complete. You can choose to share your summary with your university.', null),
+  ('a0000000-0000-0000-0000-000000000016', '10000000-0000-0000-0000-000000000016', 'document_request', 'More documents requested', 'Your clinician requested prior evaluation records before finishing your review.', null)
+on conflict (id) do nothing;
