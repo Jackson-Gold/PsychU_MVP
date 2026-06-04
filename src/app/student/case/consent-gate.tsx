@@ -11,36 +11,28 @@ export function ConsentGate({ consents }: { consents: ConsentRecord[] }) {
   const [state, formAction] = useActionState(acceptConsents, initialState);
 
   return (
-    <form className="screening-form" action={formAction}>
-      <div className="questionnaire-sections">
+    <form className="consent-form" action={formAction}>
+      <ul className="consent-list">
         {consents.map((consent) => (
-          <details className="question-section" key={consent.id} open={consents.length === 1}>
-            <summary>
-              <span>
-                <strong>{consent.title}</strong>
-                <small>Version {consent.version}</small>
-              </span>
-              <span className="summary-chevron" aria-hidden="true">
-                +
-              </span>
-            </summary>
-            <div className="form-card">
-              <p>{consent.body}</p>
-            </div>
-          </details>
+          <li key={consent.id}>
+            <details>
+              <summary>
+                <span className="consent-list-title">{consent.title}</span>
+                <span className="consent-list-toggle">Read</span>
+              </summary>
+              <p className="consent-body">{consent.body}</p>
+            </details>
+            <input type="hidden" name="consent_version_id" value={consent.id} />
+          </li>
         ))}
-      </div>
+      </ul>
 
-      {consents.map((consent) => (
-        <input key={consent.id} type="hidden" name="consent_version_id" value={consent.id} />
-      ))}
-
-      <label className="field-row" style={{ flexDirection: "row", alignItems: "flex-start", gap: "10px" }}>
-        <input type="checkbox" name="agree" style={{ width: "auto", marginTop: "0.3em" }} />
-        <span>I have read and agree to the consent forms above.</span>
+      <label className="consent-agree">
+        <input type="checkbox" name="agree" />
+        <span>I have read and agree to {consents.length === 1 ? "this form" : "all forms above"}.</span>
       </label>
 
-      <SubmitButton label="Agree and continue" pendingLabel="Saving..." />
+      <SubmitButton label="Agree & unlock submitting" pendingLabel="Saving..." />
       {state.message ? (
         <p className={state.status === "error" ? "form-message form-message-error" : "form-message"} role="status">
           {state.message}

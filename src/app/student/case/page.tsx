@@ -1,7 +1,6 @@
 import { AppShell } from "@/components/app-shell";
 import { QuestionnaireForm } from "@/components/questionnaire-form";
 import { StatusBadge } from "@/components/status-badge";
-import { ConsentGate } from "@/app/student/case/consent-gate";
 import { DocumentUpload } from "@/app/student/case/document-upload";
 import { requireRoles } from "@/lib/auth";
 import { getPendingConsents } from "@/lib/consent";
@@ -145,23 +144,12 @@ export default async function StudentCasePage() {
         <DocumentUpload caseId={caseRecord.id} />
       </section>
 
-      {pendingConsents.length ? (
-        <section className="panel" aria-labelledby="consent-title">
-          <div className="panel-header">
-            <div>
-              <p className="eyebrow">Consent Required</p>
-              <h2 id="consent-title">Review and agree before continuing</h2>
-              <p className="section-intro">
-                Please review the forms below. Your questionnaires unlock once your consent is recorded.
-              </p>
-            </div>
-            <StatusBadge value="action needed" tone="warn" />
-          </div>
-          <ConsentGate consents={pendingConsents} />
-        </section>
-      ) : (
-        <QuestionnaireForm caseId={caseRecord.id} modules={modules} responses={responses} />
-      )}
+      <QuestionnaireForm
+        caseId={caseRecord.id}
+        modules={modules}
+        responses={responses}
+        pendingConsents={pendingConsents}
+      />
 
       <section className="panel" aria-labelledby="submission-summary-title">
         <div className="panel-header">

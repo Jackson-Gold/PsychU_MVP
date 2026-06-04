@@ -5,6 +5,7 @@ import {
   submitQuestionnaire,
   type QuestionnaireSubmissionState
 } from "@/app/student/case/actions";
+import { ConsentGate } from "@/app/student/case/consent-gate";
 import { StatusBadge } from "@/components/status-badge";
 import {
   crisisResourceCopy,
@@ -12,6 +13,7 @@ import {
   type AssessmentQuestion,
   type AssessmentResponse
 } from "@/lib/domain";
+import type { ConsentRecord } from "@/lib/consent";
 import { answerFieldName } from "@/lib/questionnaires";
 
 type AnswerValue = string | number | boolean | string[];
@@ -21,6 +23,7 @@ type QuestionnaireFormProps = {
   caseId: string;
   modules: AssessmentModule[];
   responses: AssessmentResponse[];
+  pendingConsents?: ConsentRecord[];
 };
 
 const initialState: QuestionnaireSubmissionState = {
@@ -31,16 +34,17 @@ const initialState: QuestionnaireSubmissionState = {
 const scale03Labels = ["Not at all", "Several days", "More than half the days", "Nearly every day"];
 const scale04Labels = ["0", "1", "2", "3", "4"];
 
-export function QuestionnaireForm({ caseId, modules, responses }: QuestionnaireFormProps) {
+export function QuestionnaireForm({ caseId, modules, responses, pendingConsents = [] }: QuestionnaireFormProps) {
   const completedModuleIds = new Set(responses.map((response) => response.moduleId));
   const firstIncompleteId = modules.find((module) => !completedModuleIds.has(module.id))?.id ?? modules[0]?.id;
   const progress = modules.length ? Math.round((completedModuleIds.size / modules.length) * 100) : 0;
+  const consentRequired = pendingConsents.length > 0;
 
   return (
     <section className="panel questionnaire-panel" aria-labelledby="questionnaire-title">
       <div className="panel-header">
         <div>
-          <p className="eyebrow">Student Questionnaires</p>
+          <p className="eyebrow">Your Questionnaires</p>
           <h2 id="questionnaire-title">Complete one form at a time</h2>
           <p className="section-intro">
             Each questionnaire is broken into short steps and is saved on its own. Finish whenever you like, then
@@ -50,30 +54,56 @@ export function QuestionnaireForm({ caseId, modules, responses }: QuestionnaireF
         <StatusBadge value={`${completedModuleIds.size} of ${modules.length} submitted`} tone="info" />
       </div>
 
-      <div className="progress-track" aria-label={`${progress}% of questionnaires submitted`}>
-        <span style={{ width: `${progress}%` }} />
-      </div>
+      {modules.length ? (
+        <div className="progress-track" aria-label={`${progress}% of questionnaires submitted`}>
+          <span style={{ width: `${progress}%` }} />
+        </div>
+      ) : null}
+
+      {consentRequired ? (
+        <div className="consent-inline" role="region" aria-label="Consent required">
+          <div className="consent-inline-head">
+            <span className="consent-inline-badge" aria-hidden="true">1</span>
+            <div>
+              <strong>One quick step before you submit</strong>
+              <p>Review and agree to the {pendingConsents.length === 1 ? "form" : "forms"} below. This takes a few seconds and unlocks submitting your answers. You can start filling out the questionnaires right away.</p>
+            </div>
+          </div>
+          <ConsentGate consents={pendingConsents} />
+        </div>
+      ) : null}
 
       <div className="notice-inline">
         These questionnaires support screening and clinician review. They do not provide a diagnosis or live
         emergency monitoring. Named instruments remain subject to PsychU&apos;s final permitted-use review.
       </div>
 
-      <div className="questionnaire-stack">
-        {modules.map((module) => {
-          const response = responses.find((item) => item.moduleId === module.id);
+      {modules.length ? (
+        <div className="questionnaire-stack">
+          {modules.map((module) => {
+            const response = responses.find((item) => item.moduleId === module.id);
 
-          return (
-            <QuestionnaireModuleForm
-              caseId={caseId}
-              defaultOpen={module.id === firstIncompleteId}
-              key={module.id}
-              module={module}
-              response={response}
-            />
-          );
-        })}
-      </div>
+            return (
+              <QuestionnaireModuleForm
+                caseId={caseId}
+                defaultOpen={module.id === firstIncompleteId}
+                key={module.id}
+                module={module}
+                response={response}
+                submissionLocked={consentRequired}
+              />
+            );
+          })}
+        </div>
+      ) : (
+        <div className="empty-state">
+          <strong>No questionnaires are available yet</strong>
+          <span>
+            Ask a PsychU administrator to publish the questionnaire catalog (Admin &rarr; Questionnaires &rarr; Sync),
+            then refresh this page.
+          </span>
+        </div>
+      )}
     </section>
   );
 }
@@ -83,9 +113,16 @@ type QuestionnaireModuleFormProps = {
   defaultOpen: boolean;
   module: AssessmentModule;
   response?: AssessmentResponse;
+  submissionLocked?: boolean;
 };
 
-function QuestionnaireModuleForm({ caseId, defaultOpen, module, response }: QuestionnaireModuleFormProps) {
+function QuestionnaireModuleForm({
+  caseId,
+  defaultOpen,
+  module,
+  response,
+  submissionLocked = false
+}: QuestionnaireModuleFormProps) {
   const [state, formAction, pending] = useActionState(submitQuestionnaire, initialState);
   const [answers, setAnswers] = useState<AnswerState>(() => seedModuleAnswers(module, response));
   const sections = useMemo(() => groupQuestionsBySection(module.questions), [module.questions]);
@@ -128,6 +165,12 @@ function QuestionnaireModuleForm({ caseId, defaultOpen, module, response }: Ques
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (submissionLocked) {
+      setClientError("Please agree to the consent forms at the top of this page to submit.");
+      return;
+    }
+
     const incompleteIndex = sections.findIndex(([, questions]) =>
       Boolean(firstUnansweredInSection(module.id, questions, answers))
     );
@@ -237,8 +280,14 @@ function QuestionnaireModuleForm({ caseId, defaultOpen, module, response }: Ques
           </button>
 
           {isLastStep ? (
-            <button className="button button-primary" type="submit" disabled={pending}>
-              {pending ? "Saving..." : response ? "Update and resubmit" : "Save and submit questionnaire"}
+            <button className="button button-primary" type="submit" disabled={pending || submissionLocked}>
+              {pending
+                ? "Saving..."
+                : submissionLocked
+                  ? "Agree to consent to submit"
+                  : response
+                    ? "Update and resubmit"
+                    : "Save and submit questionnaire"}
             </button>
           ) : (
             <button className="button button-primary" type="button" onClick={handleContinue}>
