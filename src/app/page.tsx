@@ -54,17 +54,30 @@ export default function HomePage() {
         </div>
 
         <div className="landing-hero-visual" aria-hidden="true">
-          <div className="hero-orb" />
-          <div className="hero-prism">
-            <span className="prism-shard" />
-            <span className="prism-shard" />
-            <span className="prism-shard" />
-            <span className="prism-shard" />
-            <span className="prism-shard" />
+          <div className="hero-stage">
+            <div className="hero-orb" />
+            <svg className="hero-wire" viewBox="0 0 100 100">
+              <line x1="27" y1="27" x2="50" y2="50" />
+              <line x1="71" y1="50" x2="50" y2="50" />
+              <line x1="33" y1="75" x2="50" y2="50" />
+              <circle className="hero-wire-glow" cx="27" cy="27" r="3" />
+              <circle className="hero-wire-glow" cx="71" cy="50" r="3" />
+              <circle className="hero-wire-glow" cx="33" cy="75" r="3" />
+              <circle cx="27" cy="27" r="1.5" />
+              <circle cx="71" cy="50" r="1.5" />
+              <circle cx="33" cy="75" r="1.5" />
+            </svg>
+            <div className="hero-prism">
+              <span className="prism-shard" />
+              <span className="prism-shard" />
+              <span className="prism-shard" />
+              <span className="prism-shard" />
+              <span className="prism-shard" />
+            </div>
+            <span className="hero-node hero-node-1">Screening</span>
+            <span className="hero-node hero-node-2">Clinician</span>
+            <span className="hero-node hero-node-3">Packet</span>
           </div>
-          <div className="hero-node hero-node-1">Screening</div>
-          <div className="hero-node hero-node-2">Clinician</div>
-          <div className="hero-node hero-node-3">Packet</div>
         </div>
       </section>
 
