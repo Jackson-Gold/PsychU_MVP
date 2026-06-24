@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Synaptec — Virtual neuropsych evaluations in 15 days. Launching Fall 2026.",
+  title: "Synaptec — Neuropsychological evaluations with a two-week turnaround",
   description:
-    "The waitlist for neuropsychological testing is 6 months. Synaptec is launching a 100% virtual, clinician-signed evaluation in 15 days. Join the priority waitlist for Fall 2026."
+    "Synaptec provides neuropsychological evaluations for college and grad students with a two-week turnaround: online forms, a virtual clinician evaluation, and a report with a treatment plan and recommendations."
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

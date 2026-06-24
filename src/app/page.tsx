@@ -1,48 +1,65 @@
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
-import { WaitlistForm } from "@/components/waitlist-form";
 
-const heroPills = ["15-day evaluation", "100% virtual", "Clinician-signed", "Launching Fall 2026"];
-
-const problemStats = [
-  { value: "5–18 mo", label: "Typical waitlist", detail: "Students lose an entire semester — or longer — before a single test is run." },
-  { value: "$4,500", label: "Average cost", detail: "Price barriers put evaluations out of reach for thousands of students." },
-  { value: "$30k+", label: "Tuition at risk", detail: "Missing an accommodation deadline can delay a degree and career by a year." },
-  { value: "<6,000", label: "Neuropsychologists in the U.S.", detail: "A shrinking pool against 2M+ students who need an evaluation." }
-];
+const heroPills = ["Two-week turnaround", "100% virtual", "Clinician-signed report", "Built for students"];
 
 const howItWorks = [
   {
-    title: "Virtual testing",
-    detail:
-      "Complete your standardized testing battery remotely, proctored live by a trained psychometrist. No traveling to far-off clinics."
+    title: "Online forms",
+    detail: "Complete a few quick, frictionless questionnaires online — at your own pace, on any device."
   },
   {
-    title: "AI-assisted scribing",
-    detail: "Our secure, clinical-grade AI drafts the massive, structured diagnostic report instantly."
+    title: "Meet with a clinician",
+    detail: "Connect virtually with a clinician for your evaluation. No travel, no long clinic waitlists."
   },
   {
-    title: "Licensed neuropsychologist sign-off",
+    title: "Get your report",
     detail:
-      "A doctoral-level, licensed neuropsychologist reviews the data, makes the diagnosis, and signs your report — 100% compliant with university and testing-board (MCAT, LSAT) standards."
+      "Receive an evaluation report with a treatment plan and recommendations to get the supports you need for school and daily life."
   }
 ];
 
-const coFounders = [
+const included = [
+  {
+    title: "Comprehensive evaluation report",
+    detail: "Outlines your strengths, weaknesses, and tailored recommendations."
+  },
+  {
+    title: "Clinical diagnoses",
+    detail:
+      "Identifies disorders such as ADHD, learning disorders, executive functioning, anxiety, and depression."
+  },
+  {
+    title: "Treatment plan",
+    detail: "Medical, psychological, and academic recommendations, which may include:",
+    bullets: [
+      "Referrals for targeted therapies",
+      "Medication assessment referrals",
+      "Testing and other academic accommodations"
+    ]
+  }
+];
+
+const founders = [
   {
     name: "Elizabeth Amador",
-    role: "Co-Founder & CEO",
+    role: "CEO & Co-Founder",
     bio: "Strategic ops and mental-health innovator (Northwestern MBA / MA in Psychology)."
   },
   {
+    name: "Jodi Gold, MD",
+    role: "Chief Clinical Officer & Co-Founder",
+    bio: "Nationally recognized, board-certified child and adolescent psychiatrist."
+  },
+  {
     name: "Richard Keeling, MD",
-    role: "Co-Founder & VP, Institutional Relationships",
+    role: "VP, Institutional Relationships & Co-Founder",
     bio: "30+ years advising U.S. universities on student health and disability resources."
   },
   {
-    name: "Jodi Gold, MD",
-    role: "Co-Founder & Chief Clinical Officer",
-    bio: "Nationally recognized, board-certified child and adolescent psychiatrist."
+    name: "Jackson Gold, M.S.",
+    role: "Co-Founder, Chief Technology Officer & Distinguished Architect of Digital Sorcery",
+    bio: "Master's-degree-wielding full-stack polymath who bends databases, pixels, and large language models to his will — and reliably converts espresso into production-grade software."
   }
 ];
 
@@ -54,22 +71,22 @@ export default function HomePage() {
         <div className="landing-hero-copy">
           <span className="hero-chip">
             <span className="hero-chip-dot" aria-hidden="true" />
-            In development · Launching Fall 2026
+            Neuropsychological evaluations
           </span>
           <h1 id="landing-title">
-            The waitlist for neuropsych testing is 6 months. We&apos;re launching a way to do it in{" "}
-            <span className="hero-accent">15 days</span>.
+            Neuropsychological evaluations for college and grad students with a{" "}
+            <span className="hero-accent">two-week turnaround</span>.
           </h1>
           <p className="hero-lede">
-            Synaptec is the first end-to-end virtual telehealth platform built specifically to solve the student
-            accommodation crisis. Same clinical gold standard. 90% less wait time.
+            A clinical assessment that maps how a person thinks, learns, and processes — a critical step in acquiring
+            the psychological and academic support you need.
           </p>
           <div className="hero-actions">
-            <Link className="button button-glow button-lg" href="#waitlist">
-              Join the Priority Waitlist
+            <Link className="button button-glow button-lg" href="/student/case">
+              Get Started
             </Link>
             <Link className="button button-ghost button-lg" href="#how">
-              See how it works
+              How it works
             </Link>
           </div>
           <ul className="hero-pills" aria-label="What to expect">
@@ -105,62 +122,17 @@ export default function HomePage() {
               <span className="prism-shard" />
               <span className="prism-shard" />
             </div>
-            <span className="hero-node hero-node-1">Virtual testing</span>
-            <span className="hero-node hero-node-2">AI scribe</span>
-            <span className="hero-node hero-node-3">NP sign-off</span>
+            <span className="hero-node hero-node-1">Online forms</span>
+            <span className="hero-node hero-node-2">Clinician</span>
+            <span className="hero-node hero-node-3">Report</span>
           </div>
-        </div>
-      </section>
-
-      <section id="waitlist" className="panel waitlist-panel" aria-labelledby="waitlist-title">
-        <div className="waitlist-copy">
-          <p className="eyebrow">Early access</p>
-          <h2 id="waitlist-title">Join the waitlist to secure priority booking &amp; save your semester</h2>
-          <p className="section-intro">
-            Traditional waitlists will delay your accommodations. Secure your spot in our limited launch cohort today.
-          </p>
-        </div>
-        <WaitlistForm />
-      </section>
-
-      <section id="why" aria-labelledby="why-title">
-        <div className="section-head">
-          <p className="eyebrow">Why we&apos;re building this</p>
-          <h2 id="why-title">The system is broken. Students are paying the price.</h2>
-          <p>
-            Over 2 million higher-ed students need a neuropsychological evaluation to unlock the accommodations — like
-            extended testing time or quiet rooms — they are legally entitled to. With fewer than 6,000
-            neuropsychologists in the U.S., the bottlenecks are devastating.
-          </p>
-        </div>
-        <div className="stat-grid">
-          {problemStats.map((stat) => (
-            <article className="stat-card" key={stat.label}>
-              <span className="stat-value">{stat.value}</span>
-              <span className="stat-label">{stat.label}</span>
-              <span className="stat-detail">{stat.detail}</span>
-            </article>
-          ))}
-        </div>
-        <div className="cta-banner" aria-label="How Synaptec fixes it">
-          <div className="cta-banner-copy">
-            <h2>Synaptec is fixing this.</h2>
-            <p>
-              By automating clinical paperwork and using remote, psychometrist-led testing, we reduce the doctor&apos;s
-              time per evaluation from 10 hours to 2 — increasing clinical throughput by 8× and taking wait times down
-              from months to just 15 days.
-            </p>
-          </div>
-          <Link className="button button-glow button-lg" href="#waitlist">
-            Join the Priority Waitlist
-          </Link>
         </div>
       </section>
 
       <section id="how" aria-labelledby="how-title">
         <div className="section-head">
-          <p className="eyebrow">How it works (when we launch)</p>
-          <h2 id="how-title">Same clinical standard. 8× faster.</h2>
+          <p className="eyebrow">How it works</p>
+          <h2 id="how-title">Three simple steps to your evaluation</h2>
         </div>
         <ol className="pipeline">
           {howItWorks.map((step, index) => (
@@ -175,24 +147,49 @@ export default function HomePage() {
         </ol>
       </section>
 
+      <section id="included" aria-labelledby="included-title">
+        <div className="section-head">
+          <p className="eyebrow">What you get</p>
+          <h2 id="included-title">A clear picture of how you think, learn, and process</h2>
+          <p>Your evaluation is a critical step toward the right support. It includes:</p>
+        </div>
+        <div className="audience-grid">
+          {included.map((item) => (
+            <article className="audience-card" key={item.title}>
+              <h3>{item.title}</h3>
+              <p className="included-detail">{item.detail}</p>
+              {item.bullets ? (
+                <ul>
+                  {item.bullets.map((bullet) => (
+                    <li key={bullet}>{bullet}</li>
+                  ))}
+                </ul>
+              ) : null}
+            </article>
+          ))}
+        </div>
+      </section>
+
       <section id="team" aria-labelledby="team-title">
         <div className="section-head">
-          <p className="eyebrow">Trusted clinical leadership</p>
-          <h2 id="team-title">Our co-founders</h2>
+          <p className="eyebrow">Meet the team</p>
+          <h2 id="team-title">Founders behind Synaptec</h2>
+          <p>Clinical depth, institutional reach, and the engineering to make it effortless.</p>
         </div>
-        <div className="cofounder-grid">
-          {coFounders.map((person) => (
-            <article className="cofounder-card" key={person.name}>
-              <span className="cofounder-avatar" aria-hidden="true">
+        <div className="founder-grid">
+          {founders.map((person) => (
+            <article className="founder-card" key={person.name}>
+              <span className="founder-avatar" aria-hidden="true">
                 {person.name
+                  .replace(/,.*$/, "")
                   .split(" ")
                   .slice(0, 2)
                   .map((part) => part[0])
                   .join("")}
               </span>
               <h3>{person.name}</h3>
-              <p className="cofounder-role">{person.role}</p>
-              <p className="cofounder-bio">{person.bio}</p>
+              <p className="founder-role">{person.role}</p>
+              <p className="founder-bio">{person.bio}</p>
             </article>
           ))}
         </div>
@@ -200,14 +197,15 @@ export default function HomePage() {
 
       <section className="cta-banner cta-banner-final" aria-labelledby="final-cta-title">
         <div className="cta-banner-copy">
-          <h2 id="final-cta-title">Be the first in line when we launch.</h2>
+          <h2 id="final-cta-title">Get the supports you need for school and daily life.</h2>
           <p>
-            Are you an investor? Help us accelerate our launch — contact Elizabeth Amador at{" "}
-            <a href="mailto:eamador@getsynaptec.com">eamador@getsynaptec.com</a>.
+            Questions? Reach Elizabeth Amador, CEO &amp; Co-founder, at{" "}
+            <a href="mailto:eamador@getsynaptec.com">eamador@getsynaptec.com</a> or{" "}
+            <a href="tel:+19179221976">+1.917.922.1976</a>.
           </p>
         </div>
-        <Link className="button button-glow button-lg" href="#waitlist">
-          Join the Priority Waitlist
+        <Link className="button button-glow button-lg" href="/student/case">
+          Get Started
         </Link>
       </section>
     </AppShell>

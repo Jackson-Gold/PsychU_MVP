@@ -23,7 +23,7 @@ export async function AppShell({ children, active }: AppShellProps) {
       </a>
       <header className="site-header">
         <Link className="brand-lockup" href={homeHref} aria-label="Synaptec home">
-          <SynaptecMark size={42} className="brand-mark-svg" />
+          <SynaptecMark size={58} className="brand-mark-svg" />
           <span>
             <span className="eyebrow">Neuropsych evaluations</span>
             <strong className="brand-wordmark">synaptec</strong>
@@ -33,7 +33,7 @@ export async function AppShell({ children, active }: AppShellProps) {
           {context ? (
             <TakeAssessmentCta size="sm" className="header-cta" />
           ) : (
-            <TakeAssessmentCta size="sm" className="header-cta" href="/#waitlist" label="Join the Waitlist" />
+            <TakeAssessmentCta size="sm" className="header-cta" href="/student/case" label="Get Started" />
           )}
           <nav aria-label="Primary navigation">
             <ul className="nav-list">

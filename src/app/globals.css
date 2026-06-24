@@ -81,9 +81,9 @@ textarea:focus-visible {
 }
 
 .app-frame {
-  width: min(1240px, calc(100% - 32px));
+  width: min(1480px, calc(100% - 40px));
   margin: 0 auto;
-  padding: 18px 0 64px;
+  padding: 18px 0 72px;
 }
 
 .skip-link {
@@ -102,9 +102,8 @@ textarea:focus-visible {
 }
 
 .site-header {
-  position: sticky;
+  position: relative;
   z-index: 10;
-  top: 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -113,7 +112,7 @@ textarea:focus-visible {
   border: 1px solid var(--line);
   border-radius: 22px;
   background: rgba(255, 255, 255, 0.94);
-  padding: 11px 12px;
+  padding: 12px 16px;
   box-shadow: var(--shadow);
   backdrop-filter: blur(16px);
 }
@@ -127,7 +126,12 @@ textarea:focus-visible {
 
 .brand-mark-svg {
   flex: none;
-  filter: drop-shadow(0 6px 14px rgba(240, 133, 30, 0.28));
+  filter: drop-shadow(0 8px 18px rgba(240, 133, 30, 0.38));
+  transition: transform 200ms ease;
+}
+
+.brand-lockup:hover .brand-mark-svg {
+  transform: rotate(8deg) scale(1.05);
 }
 
 .brand-lockup strong,
@@ -145,7 +149,7 @@ h3 {
 
 .brand-wordmark {
   font-family: "Inter", "Helvetica Neue", Arial, system-ui, sans-serif;
-  font-size: 1.35rem;
+  font-size: 1.6rem;
   font-weight: 800;
   letter-spacing: -0.03em;
   color: var(--ink);
@@ -2432,81 +2436,20 @@ input[type="range"] {
   font-weight: 800;
 }
 
-/* Waitlist capture */
-.waitlist-panel {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.9fr);
-  gap: clamp(20px, 4vw, 44px);
-  align-items: center;
-  margin-top: 22px;
-  border-top: 4px solid var(--orange);
-}
-
-.waitlist-copy h2 {
-  margin: 6px 0 0;
-  font-size: clamp(1.6rem, 3vw, 2.3rem);
-  letter-spacing: -0.03em;
-}
-
-.waitlist-form {
-  display: grid;
-  gap: 14px;
-}
-
-.waitlist-fields {
-  display: grid;
-  gap: 14px;
-}
-
-.waitlist-form .button {
-  width: 100%;
-}
-
-.waitlist-success {
-  display: flex;
-  align-items: flex-start;
-  gap: 14px;
-  border: 1px solid var(--good);
-  border-radius: 18px;
-  background: var(--good-bg);
-  padding: 22px;
-}
-
-.waitlist-check {
-  display: grid;
-  flex: none;
-  width: 34px;
-  height: 34px;
-  place-items: center;
-  border-radius: 999px;
-  background: var(--good);
-  color: #ffffff;
-  font-weight: 800;
-}
-
-.waitlist-success strong {
-  display: block;
-  font-size: 1.05rem;
-}
-
-.waitlist-success p {
-  margin: 4px 0 0;
+.included-detail {
+  margin: 0;
   color: var(--muted);
+  font-size: 0.96rem;
 }
 
-.waitlist-email {
-  font-weight: 800;
-  color: var(--ink);
-}
-
-/* Co-founders */
-.cofounder-grid {
+/* Founders */
+.founder-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 18px;
 }
 
-.cofounder-card {
+.founder-card {
   display: grid;
   justify-items: start;
   gap: 8px;
@@ -2517,41 +2460,36 @@ input[type="range"] {
   box-shadow: var(--shadow-soft);
 }
 
-.cofounder-avatar {
+.founder-avatar {
   display: grid;
-  width: 52px;
-  height: 52px;
+  width: 54px;
+  height: 54px;
   place-items: center;
   border-radius: 16px;
   background: linear-gradient(140deg, var(--orange), var(--coral));
   color: #ffffff;
   font-weight: 800;
+  font-size: 1.05rem;
   letter-spacing: -0.02em;
 }
 
-.cofounder-card h3 {
+.founder-card h3 {
   margin: 6px 0 0;
-  font-size: 1.2rem;
+  font-size: 1.18rem;
   letter-spacing: -0.01em;
 }
 
-.cofounder-role {
+.founder-role {
   margin: 0;
   font-weight: 800;
   color: var(--orange-dark);
-  font-size: 0.9rem;
+  font-size: 0.88rem;
 }
 
-.cofounder-bio {
+.founder-bio {
   margin: 0;
   color: var(--muted);
   font-size: 0.95rem;
-}
-
-@media (max-width: 860px) {
-  .waitlist-panel {
-    grid-template-columns: 1fr;
-  }
 }
 
 @keyframes hero-pulse {
