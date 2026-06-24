@@ -139,7 +139,7 @@ export function ScreeningDemo({ modules }: ScreeningDemoProps) {
         <div className="success-callout" role="status">
           <strong>{hasSafetyFlag ? "Urgent flag created" : "Screening submitted"}</strong>
           <p>
-            The production workflow records an audit event, updates the case status, and notifies PsychU reviewers.
+            The production workflow records an audit event, updates the case status, and notifies Synaptec reviewers.
           </p>
         </div>
       ) : null}

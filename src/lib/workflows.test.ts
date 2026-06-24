@@ -99,7 +99,7 @@ describe("screening workflows", () => {
     ).toBe(false);
   });
 
-  it("recognizes PsychU clinician queue access", () => {
+  it("recognizes Synaptec clinician queue access", () => {
     const clinicianMemberships = demoMemberships.filter((membership) => membership.userId === "user_clinician_rivera");
     expect(canAccessClinicianQueue(clinicianMemberships)).toBe(true);
     expect(demoPacket.legalDisclaimer).toContain("not a diagnosis");
@@ -164,6 +164,6 @@ describe("screening workflows", () => {
 
     const redacted = redactPacketForUniversity(packet);
     expect(redacted.riskFlags[0].message).not.toContain("Sensitive raw safety detail");
-    expect(redacted.riskFlags[0].message).toContain("Contact PsychU");
+    expect(redacted.riskFlags[0].message).toContain("Contact Synaptec");
   });
 });

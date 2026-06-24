@@ -5,7 +5,7 @@ import type {
 
 const catalogCreatedAt = "2026-06-03T00:00:00.000Z";
 const crisisResourceCopy =
-  "If you might hurt yourself or someone else, call or text 988 now, use 988 Lifeline chat, or call 911 if there is immediate danger. PsychU is not a live crisis response service.";
+  "If you might hurt yourself or someone else, call or text 988 now, use 988 Lifeline chat, or call 911 if there is immediate danger. Synaptec is not a live crisis response service.";
 
 const frequencyOptions = [
   "Not at all - 0 days",
@@ -786,7 +786,7 @@ export const assessmentCatalog: AssessmentModule[] = [
     domains: ["anxiety"],
     description: "A seven-item anxiety symptom questionnaire about the last two weeks.",
     attribution:
-      "Copyright 1999 Pfizer Inc. All rights reserved. Reproduced with permission in the supplied source document. PsychU must confirm permitted use before production launch.",
+      "Copyright 1999 Pfizer Inc. All rights reserved. Reproduced with permission in the supplied source document. Synaptec must confirm permitted use before production launch.",
     estimatedMinutes: 3,
     scoringStrategy: "sum_scale",
     scoringConfig: {

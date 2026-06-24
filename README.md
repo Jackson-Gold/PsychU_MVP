@@ -1,6 +1,6 @@
-# PsychU Screening MVP
+# Synaptec Screening MVP
 
-Greenfield Next.js + Supabase MVP for student-first accessibility screening, PsychU clinician triage, reviewed packet generation, and student-controlled sharing with university staff.
+Greenfield Next.js + Supabase MVP for student-first accessibility screening, Synaptec clinician triage, reviewed packet generation, and student-controlled sharing with university staff.
 
 ## What Is Built
 
@@ -59,7 +59,7 @@ node scripts/generate-assessment-seed.mjs
 
 ## Production Caveats
 
-- Legal copy is placeholder text and must be approved by PsychU counsel before real student launch.
+- Legal copy is placeholder text and must be approved by Synaptec counsel before real student launch.
 - PHQ-9 and GAD-7 are active for controlled MVP evaluation but must not be used with real students until permitted use and attribution are verified.
 - External AI triage is stubbed behind an adapter and must not be enabled until vendor/privacy review is complete.
 - This MVP does not diagnose, determine accommodations, or provide live crisis response.

@@ -13,8 +13,8 @@ const initialState: PasswordLoginState = {
 
 const demoAccounts = [
   { role: "Student", email: "student@example.com" },
-  { role: "Clinician", email: "clinician@example.com" },
-  { role: "Admin", email: "admin@example.com" }
+  { role: "Neuropsychologist", email: "clinician@example.com" },
+  { role: "Synaptec admin", email: "admin@example.com" }
 ];
 
 export function LoginForm() {
@@ -27,7 +27,7 @@ export function LoginForm() {
       <div className="panel-header">
         <div>
           <p className="eyebrow">Role-Based Access</p>
-          <h1 id="password-login-title">Sign in to PsychU</h1>
+          <h1 id="password-login-title">Sign in to Synaptec</h1>
         </div>
       </div>
 

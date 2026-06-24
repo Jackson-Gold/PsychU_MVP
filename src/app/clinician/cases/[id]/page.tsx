@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
 import { ClinicianReviewForm } from "@/components/clinician-review-form";
+import { EvaluationPipeline } from "@/components/evaluation-pipeline";
 import { StatusBadge } from "@/components/status-badge";
 import { runAITriage } from "@/lib/ai/triage";
 import { requireRoles } from "@/lib/auth";
@@ -77,7 +78,7 @@ export default async function ClinicianCasePage({ params }: ClinicianCasePagePro
       <section className="panel" aria-labelledby="review-title">
         <div className="panel-header">
           <div>
-            <p className="eyebrow">Clinician Review</p>
+            <p className="eyebrow">Neuropsychologist Review</p>
             <h1 id="review-title">{profile?.preferredName ?? "Student"}&apos;s case</h1>
             <p className="section-intro">{caseRecord.nextStep ?? "Review the submitted information and choose a next step."}</p>
           </div>
@@ -127,6 +128,8 @@ export default async function ClinicianCasePage({ params }: ClinicianCasePagePro
           </article>
         </div>
       </section>
+
+      <EvaluationPipeline status={caseRecord.status} audience="clinician" />
 
       <section className="grid-two">
         <article className="panel">
@@ -246,7 +249,7 @@ export default async function ClinicianCasePage({ params }: ClinicianCasePagePro
 
           <p className="legal-copy">
             This suggestion is advisory only and is never shown to the student. Deterministic safety rules and the
-            reviewing clinician always take precedence. {aiOutput.safety_caveats.join(" ")}
+            reviewing neuropsychologist always take precedence. {aiOutput.safety_caveats.join(" ")}
           </p>
         </section>
       ) : null}

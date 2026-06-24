@@ -27,7 +27,7 @@ const now = "2026-04-29T01:00:00.000Z";
 export const demoOrganizations: Organization[] = [
   {
     id: "org_psychu",
-    name: "PsychU",
+    name: "Synaptec",
     slug: "psychu",
     type: "psychu",
     retentionYears: 7,
@@ -172,7 +172,7 @@ export const demoCase: PsychuCase = {
   assignedClinicianUserId: "user_clinician_rivera",
   currentSummary:
     "Student reports longstanding attention, pace, and timed-testing challenges with prior high school accommodations.",
-  nextStep: "PsychU clinician review in progress.",
+  nextStep: "Synaptec clinician review in progress.",
   createdAt: "2026-04-28T18:55:00.000Z",
   updatedAt: now
 };
@@ -303,7 +303,7 @@ export const demoClinicianReview: ClinicianReview = {
   reviewerNotes:
     "Screening pattern and prior documentation support sharing a triage packet with the university accessibility office. Student may still need updated formal evaluation depending on school policy.",
   studentFacingSummary:
-    "Your screening responses show meaningful attention/executive-function impact in academic settings. Based on the records provided, PsychU recommends sharing this reviewed triage packet with your university accessibility office and confirming whether updated documentation is required.",
+    "Your screening responses show meaningful attention/executive-function impact in academic settings. Based on the records provided, Synaptec recommends sharing this reviewed triage packet with your university accessibility office and confirming whether updated documentation is required.",
   requestedDocuments: [],
   createdAt: "2026-04-28T22:00:00.000Z",
   updatedAt: now
@@ -335,7 +335,7 @@ export const demoNotifications: Notification[] = [
     userId: "user_student_maya",
     type: "case_status",
     title: "Review complete",
-    body: "Your PsychU triage packet is ready to review and share.",
+    body: "Your Synaptec triage packet is ready to review and share.",
     createdAt: now
   }
 ];

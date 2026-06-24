@@ -87,7 +87,7 @@ export async function saveClinicianReview(
           ? "Upload requested information for clinician review."
           : input.data.case_status === "packet_ready"
             ? "Review your clinician-approved packet and decide whether to share it."
-            : "PsychU clinician review is in progress."
+            : "Synaptec clinician review is in progress."
     })
     .eq("id", input.data.case_id)
     .select("organization_id, student_user_id")
@@ -129,7 +129,7 @@ export async function saveClinicianReview(
           user_id: caseRecord.student_user_id,
           type: "case_status",
           title: "Your reviewed packet is ready",
-          body: "A PsychU clinician approved your triage packet. Review it and decide whether to share it with your university."
+          body: "A Synaptec clinician approved your triage packet. Review it and decide whether to share it with your university."
         });
       }
     }

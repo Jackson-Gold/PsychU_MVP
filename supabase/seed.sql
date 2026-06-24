@@ -1,6 +1,6 @@
 insert into public.organizations (id, name, slug, type, retention_years)
 values
-  ('00000000-0000-0000-0000-000000000001', 'PsychU', 'psychu', 'psychu', 7),
+  ('00000000-0000-0000-0000-000000000001', 'Synaptec', 'psychu', 'psychu', 7),
   ('00000000-0000-0000-0000-000000000002', 'Pilot University', 'pilot-university', 'university', 7)
 on conflict (id) do nothing;
 
@@ -272,7 +272,7 @@ values
     'student_consent',
     'Student Screening Consent',
     '1.0-draft',
-    'Draft placeholder. Replace with PsychU counsel-approved consent before production launch.',
+    'Draft placeholder. Replace with Synaptec counsel-approved consent before production launch.',
     true
   ),
   (
@@ -284,7 +284,7 @@ values
   ),
   (
     'privacy_notice',
-    'PsychU Pilot Privacy Notice',
+    'Synaptec Pilot Privacy Notice',
     '1.0-draft',
     'Draft placeholder. Describes FERPA-first pilot data handling, private document storage, audit logs, retention, and student-controlled sharing.',
     true
@@ -393,7 +393,7 @@ values
     4,
     'sum_scale',
     '{"label":"PHQ-9 total score","maxValue":27,"ranges":[{"min":0,"max":4,"severity":"minimal","interpretation":"None-minimal depression severity"},{"min":5,"max":9,"severity":"mild","interpretation":"Mild depression severity"},{"min":10,"max":14,"severity":"moderate","interpretation":"Moderate depression severity"},{"min":15,"max":19,"severity":"moderately_severe","interpretation":"Moderately severe depression severity"},{"min":20,"max":27,"severity":"severe","interpretation":"Severe depression severity"}]}'::jsonb,
-    '[{"id":"phq9_1","label":"Little interest or pleasure in doing things","section":"Over the last 2 weeks","helpText":"Choose the answer that best describes how often this has bothered you.","type":"scale_0_3","required":true},{"id":"phq9_2","label":"Feeling down, depressed, or hopeless","section":"Over the last 2 weeks","helpText":"Choose the answer that best describes how often this has bothered you.","type":"scale_0_3","required":true},{"id":"phq9_3","label":"Trouble falling or staying asleep, or sleeping too much","section":"Over the last 2 weeks","helpText":"Choose the answer that best describes how often this has bothered you.","type":"scale_0_3","required":true},{"id":"phq9_4","label":"Feeling tired or having little energy","section":"Over the last 2 weeks","helpText":"Choose the answer that best describes how often this has bothered you.","type":"scale_0_3","required":true},{"id":"phq9_5","label":"Poor appetite or overeating","section":"Over the last 2 weeks","helpText":"Choose the answer that best describes how often this has bothered you.","type":"scale_0_3","required":true},{"id":"phq9_6","label":"Feeling bad about yourself - or that you are a failure or have let yourself or your family down","section":"Over the last 2 weeks","helpText":"Choose the answer that best describes how often this has bothered you.","type":"scale_0_3","required":true},{"id":"phq9_7","label":"Trouble concentrating on things, such as reading the newspaper or watching television","section":"Over the last 2 weeks","helpText":"Choose the answer that best describes how often this has bothered you.","type":"scale_0_3","required":true},{"id":"phq9_8","label":"Moving or speaking so slowly that other people could have noticed, or the opposite - being so fidgety or restless that you have been moving around a lot more than usual","section":"Over the last 2 weeks","helpText":"Choose the answer that best describes how often this has bothered you.","type":"scale_0_3","required":true},{"id":"phq9_9","label":"Thoughts that you would be better off dead or of hurting yourself in some way","section":"Over the last 2 weeks","helpText":"Choose the answer that best describes how often this has bothered you.","type":"scale_0_3","required":true,"riskTrigger":{"minimum":1,"severity":"high","message":"A response above ''Not at all'' to PHQ-9 question 9 requires prompt follow-up by a clinician competent to assess suicide risk. If you might hurt yourself or someone else, call or text 988 now, use 988 Lifeline chat, or call 911 if there is immediate danger. PsychU is not a live crisis response service."}},{"id":"phq9_difficulty","label":"If you checked off any problems, how difficult have these problems made it for you to do your work, take care of things at home, or get along with other people?","section":"Functional impact","type":"single_select","required":true,"options":["Not difficult at all","Somewhat difficult","Very difficult","Extremely difficult"]}]'::jsonb
+    '[{"id":"phq9_1","label":"Little interest or pleasure in doing things","section":"Over the last 2 weeks","helpText":"Choose the answer that best describes how often this has bothered you.","type":"scale_0_3","required":true},{"id":"phq9_2","label":"Feeling down, depressed, or hopeless","section":"Over the last 2 weeks","helpText":"Choose the answer that best describes how often this has bothered you.","type":"scale_0_3","required":true},{"id":"phq9_3","label":"Trouble falling or staying asleep, or sleeping too much","section":"Over the last 2 weeks","helpText":"Choose the answer that best describes how often this has bothered you.","type":"scale_0_3","required":true},{"id":"phq9_4","label":"Feeling tired or having little energy","section":"Over the last 2 weeks","helpText":"Choose the answer that best describes how often this has bothered you.","type":"scale_0_3","required":true},{"id":"phq9_5","label":"Poor appetite or overeating","section":"Over the last 2 weeks","helpText":"Choose the answer that best describes how often this has bothered you.","type":"scale_0_3","required":true},{"id":"phq9_6","label":"Feeling bad about yourself - or that you are a failure or have let yourself or your family down","section":"Over the last 2 weeks","helpText":"Choose the answer that best describes how often this has bothered you.","type":"scale_0_3","required":true},{"id":"phq9_7","label":"Trouble concentrating on things, such as reading the newspaper or watching television","section":"Over the last 2 weeks","helpText":"Choose the answer that best describes how often this has bothered you.","type":"scale_0_3","required":true},{"id":"phq9_8","label":"Moving or speaking so slowly that other people could have noticed, or the opposite - being so fidgety or restless that you have been moving around a lot more than usual","section":"Over the last 2 weeks","helpText":"Choose the answer that best describes how often this has bothered you.","type":"scale_0_3","required":true},{"id":"phq9_9","label":"Thoughts that you would be better off dead or of hurting yourself in some way","section":"Over the last 2 weeks","helpText":"Choose the answer that best describes how often this has bothered you.","type":"scale_0_3","required":true,"riskTrigger":{"minimum":1,"severity":"high","message":"A response above ''Not at all'' to PHQ-9 question 9 requires prompt follow-up by a clinician competent to assess suicide risk. If you might hurt yourself or someone else, call or text 988 now, use 988 Lifeline chat, or call 911 if there is immediate danger. Synaptec is not a live crisis response service."}},{"id":"phq9_difficulty","label":"If you checked off any problems, how difficult have these problems made it for you to do your work, take care of things at home, or get along with other people?","section":"Functional impact","type":"single_select","required":true,"options":["Not difficult at all","Somewhat difficult","Very difficult","Extremely difficult"]}]'::jsonb
   ),
   (
     '00000000-0000-0000-0000-000000000111',
@@ -404,7 +404,7 @@ values
     'licensed_pending',
     array['anxiety'],
     'A seven-item anxiety symptom questionnaire about the last two weeks.',
-    'Copyright 1999 Pfizer Inc. All rights reserved. Reproduced with permission in the supplied source document. PsychU must confirm permitted use before production launch.',
+    'Copyright 1999 Pfizer Inc. All rights reserved. Reproduced with permission in the supplied source document. Synaptec must confirm permitted use before production launch.',
     3,
     'sum_scale',
     '{"label":"GAD-7 total score","maxValue":21,"ranges":[{"min":0,"max":4,"severity":"minimal","interpretation":"Minimal anxiety severity"},{"min":5,"max":9,"severity":"mild","interpretation":"Mild anxiety severity"},{"min":10,"max":14,"severity":"moderate","interpretation":"Moderate anxiety severity"},{"min":15,"max":21,"severity":"severe","interpretation":"Severe anxiety severity"}]}'::jsonb,
@@ -513,7 +513,7 @@ insert into public.cases (
   id, student_user_id, organization_id, status, assigned_clinician_user_id, current_summary, next_step
 )
 values
-  ('50000000-0000-0000-0000-000000000011', '10000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000002', 'draft', '10000000-0000-0000-0000-000000000002', 'All three questionnaires submitted; awaiting first clinician review.', 'Assigned PsychU clinician review pending.'),
+  ('50000000-0000-0000-0000-000000000011', '10000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000002', 'draft', '10000000-0000-0000-0000-000000000002', 'All three questionnaires submitted; awaiting first clinician review.', 'Assigned neuropsychologist review pending.'),
   ('50000000-0000-0000-0000-000000000012', '10000000-0000-0000-0000-000000000012', '00000000-0000-0000-0000-000000000002', 'draft', '10000000-0000-0000-0000-000000000002', 'Screening submitted with an elevated PHQ-9 safety response.', 'Prompt clinician safety follow-up required.'),
   ('50000000-0000-0000-0000-000000000013', '10000000-0000-0000-0000-000000000013', '00000000-0000-0000-0000-000000000002', 'draft', '10000000-0000-0000-0000-000000000002', 'Clinician review in progress for attention and anxiety concerns.', 'Clinician drafting review and recommended next steps.'),
   ('50000000-0000-0000-0000-000000000014', '10000000-0000-0000-0000-000000000014', '00000000-0000-0000-0000-000000000002', 'draft', '10000000-0000-0000-0000-000000000002', 'Review approved; triage packet ready for the student to share.', 'Student decides whether to release the packet to their university.'),
@@ -556,7 +556,7 @@ insert into public.clinician_reviews (
   id, case_id, reviewer_user_id, status, outcome, reviewer_notes, student_facing_summary, requested_documents
 )
 values
-  ('60000000-0000-0000-0000-000000000013', '50000000-0000-0000-0000-000000000013', '10000000-0000-0000-0000-000000000002', 'draft', 'schedule_psychu_review', 'Moderate depressive symptoms with reported working-memory difficulties. Drafting recommendation for a focused PsychU review session.', 'Thanks for completing your questionnaires. A PsychU clinician is reviewing your responses and will follow up with next steps.', array[]::text[]),
+  ('60000000-0000-0000-0000-000000000013', '50000000-0000-0000-0000-000000000013', '10000000-0000-0000-0000-000000000002', 'draft', 'schedule_psychu_review', 'Moderate depressive symptoms with reported working-memory difficulties. Drafting recommendation for a focused Synaptec review session.', 'Thanks for completing your questionnaires. A Synaptec neuropsychologist is reviewing your responses and will follow up with next steps.', array[]::text[]),
   ('60000000-0000-0000-0000-000000000014', '50000000-0000-0000-0000-000000000014', '10000000-0000-0000-0000-000000000002', 'approved', 'share_with_university', 'Mild mood symptoms; primary concern is processing speed affecting timed exams. Prior evaluation supports accommodation request. Packet prepared for student-controlled sharing.', 'Your review is complete. We prepared a summary you can choose to share with your university accessibility office to support accommodations.', array[]::text[]),
   ('60000000-0000-0000-0000-000000000015', '50000000-0000-0000-0000-000000000015', '10000000-0000-0000-0000-000000000002', 'approved', 'share_with_university', 'Executive functioning concerns consistent with reported task-initiation difficulties. Packet approved; student elected to share with their university.', 'Your review is complete and you chose to share your summary with your university accessibility office. You can revoke access at any time.', array[]::text[]),
   ('60000000-0000-0000-0000-000000000016', '50000000-0000-0000-0000-000000000016', '10000000-0000-0000-0000-000000000002', 'draft', 'request_more_docs', 'Need prior school-district evaluation records before finalizing impressions. Requested documentation from the student.', 'Thanks for your submission. Before we can finish your review, please upload any prior evaluation or school records you have available.', array['Prior school-district evaluation', 'Any IEP or 504 plan documentation'])
@@ -574,8 +574,8 @@ insert into public.triage_packets (
 values
   (
     '70000000-0000-0000-0000-000000000014', '50000000-0000-0000-0000-000000000014', '60000000-0000-0000-0000-000000000014', 1, '10000000-0000-0000-0000-000000000002',
-    'Your PsychU review is complete. Screening suggests mild mood symptoms and a primary concern with reading/processing speed on timed exams. You can share this summary with your university to support an accommodations request.',
-    'A PsychU clinician reviewed this student''s screening. Findings support consideration of testing accommodations (e.g., extended time) related to processing speed. This summary is screening-based and not a diagnosis.',
+    'Your Synaptec review is complete. Screening suggests mild mood symptoms and a primary concern with reading/processing speed on timed exams. You can share this summary with your university to support an accommodations request.',
+    'A Synaptec neuropsychologist reviewed this student''s screening. Findings support consideration of testing accommodations (e.g., extended time) related to processing speed. This summary is screening-based and not a diagnosis.',
     '[{"label":"PHQ-9 total score","value":6,"maxValue":27,"severity":"mild","interpretation":"Mild depression severity"},{"label":"GAD-7 total score","value":3,"maxValue":21,"severity":"minimal","interpretation":"Minimal anxiety severity"}]'::jsonb,
     '[]'::jsonb,
     '[{"category":"prior_evaluation","fileName":"high-school-evaluation.pdf"}]'::jsonb,
@@ -584,8 +584,8 @@ values
   ),
   (
     '70000000-0000-0000-0000-000000000015', '50000000-0000-0000-0000-000000000015', '60000000-0000-0000-0000-000000000015', 1, '10000000-0000-0000-0000-000000000002',
-    'Your PsychU review is complete. Screening suggests executive functioning and task-initiation difficulties with low mood and mild anxiety. You chose to share this summary with your university accessibility office.',
-    'A PsychU clinician reviewed this student''s screening. Findings are consistent with executive functioning support needs. This summary is screening-based and not a diagnosis.',
+    'Your Synaptec review is complete. Screening suggests executive functioning and task-initiation difficulties with low mood and mild anxiety. You chose to share this summary with your university accessibility office.',
+    'A Synaptec neuropsychologist reviewed this student''s screening. Findings are consistent with executive functioning support needs. This summary is screening-based and not a diagnosis.',
     '[{"label":"PHQ-9 total score","value":4,"maxValue":27,"severity":"minimal","interpretation":"None-minimal depression severity"},{"label":"GAD-7 total score","value":5,"maxValue":21,"severity":"mild","interpretation":"Mild anxiety severity"}]'::jsonb,
     '[]'::jsonb,
     '[]'::jsonb,
@@ -627,6 +627,6 @@ update public.cases set status = 'needs_info' where id = '50000000-0000-0000-000
 -- A few student-facing notifications for demo realism (trigger-created ones also exist).
 insert into public.notifications (id, user_id, type, title, body, read_at)
 values
-  ('a0000000-0000-0000-0000-000000000014', '10000000-0000-0000-0000-000000000014', 'case_status', 'Your review is ready to share', 'Your PsychU review is complete. You can choose to share your summary with your university.', null),
+  ('a0000000-0000-0000-0000-000000000014', '10000000-0000-0000-0000-000000000014', 'case_status', 'Your review is ready to share', 'Your Synaptec review is complete. You can choose to share your summary with your university.', null),
   ('a0000000-0000-0000-0000-000000000016', '10000000-0000-0000-0000-000000000016', 'document_request', 'More documents requested', 'Your clinician requested prior evaluation records before finishing your review.', null)
 on conflict (id) do nothing;

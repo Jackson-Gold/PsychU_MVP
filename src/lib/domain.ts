@@ -33,6 +33,20 @@ export const riskSeverities = ["info", "moderate", "high", "critical"] as const;
 export const shareStatuses = ["active", "revoked", "expired"] as const;
 
 export type Role = (typeof roles)[number];
+
+// UI-facing role labels. DB enum values stay `psychu_*` to avoid a migration.
+export const roleLabels: Record<Role, string> = {
+  student: "Student",
+  psychu_clinician: "Neuropsychologist",
+  psychu_admin: "Synaptec admin",
+  university_staff: "University staff",
+  university_admin: "University admin"
+};
+
+export function roleLabel(role?: Role): string {
+  if (!role) return "Signed in";
+  return roleLabels[role] ?? role;
+}
 export type CaseStatus = (typeof caseStatuses)[number];
 export type TriageOutcome = (typeof triageOutcomes)[number];
 export type AiPriority = (typeof aiPriorities)[number];
@@ -309,7 +323,7 @@ export type Notification = {
 };
 
 export const nonDiagnosticDisclaimer =
-  "PsychU screening output is for triage and care coordination only. It is not a diagnosis, accommodation determination, or emergency response service. A licensed reviewer must approve any packet before it is shared.";
+  "Synaptec screening output is for triage and care coordination only. It is not a diagnosis, accommodation determination, or emergency response service. A licensed reviewer must approve any packet before it is shared.";
 
 export const crisisResourceCopy =
-  "If you might hurt yourself or someone else, call or text 988 now, use 988 Lifeline chat, or call 911 if there is immediate danger. PsychU is not a live crisis response service.";
+  "If you might hurt yourself or someone else, call or text 988 now, use 988 Lifeline chat, or call 911 if there is immediate danger. Synaptec is not a live crisis response service.";

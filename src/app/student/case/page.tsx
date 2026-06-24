@@ -1,4 +1,5 @@
 import { AppShell } from "@/components/app-shell";
+import { EvaluationPipeline } from "@/components/evaluation-pipeline";
 import { QuestionnaireForm } from "@/components/questionnaire-form";
 import { StatusBadge } from "@/components/status-badge";
 import { DocumentUpload } from "@/app/student/case/document-upload";
@@ -44,7 +45,7 @@ export default async function StudentCasePage() {
         <section className="panel">
           <p className="eyebrow">Student Questionnaires</p>
           <h1>No assigned case yet</h1>
-          <p>Ask a PsychU administrator to create and assign a screening case for this account.</p>
+          <p>Ask a Synaptec administrator to create and assign a screening case for this account.</p>
         </section>
       </AppShell>
     );
@@ -130,13 +131,15 @@ export default async function StudentCasePage() {
         </div>
       </section>
 
+      <EvaluationPipeline status={caseRecord.status} audience="student" />
+
       <section className="panel" aria-labelledby="upload-title">
         <div className="panel-header">
           <div>
             <p className="eyebrow">Supporting Documents</p>
             <h2 id="upload-title">Upload prior evaluations or records</h2>
             <p className="section-intro">
-              Documents are stored privately and shared only with your assigned PsychU clinician unless you release a
+              Documents are stored privately and shared only with your assigned neuropsychologist unless you release a
               reviewed packet.
             </p>
           </div>

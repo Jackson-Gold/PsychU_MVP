@@ -73,7 +73,7 @@ export default async function UniversityInvitesPage() {
         ) : (
           <div className="empty-state">
             <strong>No university organization is available</strong>
-            <span>Ask a PsychU administrator to attach your account to a university tenant.</span>
+            <span>Ask a Synaptec administrator to attach your account to a university tenant.</span>
           </div>
         )}
       </section>

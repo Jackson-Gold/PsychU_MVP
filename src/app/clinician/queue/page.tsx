@@ -52,7 +52,7 @@ export default async function ClinicianQueuePage() {
       <section className="panel" aria-labelledby="queue-title">
         <div className="panel-header">
           <div>
-            <p className="eyebrow">PsychU Clinician Portal</p>
+            <p className="eyebrow">Neuropsychologist Portal</p>
             <h1 id="queue-title">{isAdmin ? "All student cases" : "Your assigned cases"}</h1>
             <p className="section-intro">
               Track questionnaire progress, review safety flags, and continue each assigned case.

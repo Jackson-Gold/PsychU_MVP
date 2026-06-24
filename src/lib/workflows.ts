@@ -201,13 +201,13 @@ export function derivePacketNextSteps(review: ClinicianReview): string[] {
     return ["Schedule an external psychoeducational evaluation with a qualified provider."];
   }
   if (review.outcome === "urgent_safety_followup") {
-    return ["Use crisis resources if safety concerns are active.", "PsychU reviewer follow-up is required."];
+    return ["Use crisis resources if safety concerns are active.", "Synaptec reviewer follow-up is required."];
   }
   if (review.outcome === "share_with_university") {
     return ["Share this reviewed packet with the university accessibility office if you want them to consider it."];
   }
   if (review.outcome === "schedule_psychu_review") {
-    return ["Schedule a follow-up review with PsychU."];
+    return ["Schedule a follow-up review with Synaptec."];
   }
   return ["No immediate action is required based on this screening review."];
 }
@@ -253,7 +253,7 @@ export function redactPacketForUniversity(packet: TriagePacket): TriagePacket {
       ...flag,
       message:
         flag.severity === "critical"
-          ? "A high-priority safety flag was reviewed by PsychU. Contact PsychU for permitted follow-up details."
+          ? "A high-priority safety flag was reviewed by Synaptec. Contact Synaptec for permitted follow-up details."
           : flag.message
     }))
   };

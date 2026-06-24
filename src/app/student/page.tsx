@@ -2,6 +2,7 @@ import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
 import { MetricCard } from "@/components/metric-card";
 import { StatusBadge } from "@/components/status-badge";
+import { TakeAssessmentCta } from "@/components/take-assessment-cta";
 import { requireRoles } from "@/lib/auth";
 import { mapCase, mapStudentProfile } from "@/lib/data";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -60,7 +61,7 @@ export default async function StudentDashboardPage() {
           <div>
             <p className="eyebrow">Student Portal</p>
             <h1 id="student-title">Welcome back, {profile?.preferredName ?? context.user.fullName}</h1>
-            <p className="section-intro">{caseRecord?.nextStep ?? "Ask PsychU to assign a screening case."}</p>
+            <p className="section-intro">{caseRecord?.nextStep ?? "Ask Synaptec to assign a screening case."}</p>
           </div>
           <StatusBadge value={caseRecord?.status ?? "no case"} />
         </div>
@@ -86,17 +87,17 @@ export default async function StudentDashboardPage() {
           <p className="eyebrow">Next Action</p>
           <h2>{completedCount ? "Continue your questionnaires" : "Start your questionnaires"}</h2>
           <p>
-            Save each form separately. Your case moves to clinician review after the NeuropsychU intake, PHQ-9, and
+            Save each form separately. Your case moves to neuropsychologist review after the Synaptec intake, PHQ-9, and
             GAD-7 are submitted.
           </p>
-          <Link className="button button-primary" href="/student/case">
-            {completedCount ? "Continue questionnaires" : "Start questionnaires"}
-          </Link>
+          <TakeAssessmentCta
+            label={completedCount ? "Continue your assessment" : "Take an Assessment"}
+          />
         </article>
 
         <article className="panel action-card">
           <p className="eyebrow">Sharing Control</p>
-          <h2>You decide what leaves PsychU</h2>
+          <h2>You decide what leaves Synaptec</h2>
           <p>
             Your reviewed packet is not automatically sent to the university. You can grant portal access after
             clinician approval.

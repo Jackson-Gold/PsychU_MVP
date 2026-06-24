@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { DemoModeNotice } from "@/components/demo-mode-notice";
+import { SynaptecMark } from "@/components/synaptec-mark";
+import { TakeAssessmentCta } from "@/components/take-assessment-cta";
 import { signOut } from "@/app/auth/actions";
 import { getAuthContext, landingPageForRoles } from "@/lib/auth";
-import type { Role } from "@/lib/domain";
+import { roleLabel, type Role } from "@/lib/domain";
 
 type AppShellProps = {
   children: React.ReactNode;
@@ -20,16 +22,19 @@ export async function AppShell({ children, active }: AppShellProps) {
         Skip to main content
       </a>
       <header className="site-header">
-        <Link className="brand-lockup" href={homeHref} aria-label="PsychU MVP home">
-          <span className="brand-mark" aria-hidden="true">
-            PU
-          </span>
+        <Link className="brand-lockup" href={homeHref} aria-label="Synaptec home">
+          <SynaptecMark size={42} className="brand-mark-svg" />
           <span>
-            <span className="eyebrow">PsychU</span>
-            <strong>Screening MVP</strong>
+            <span className="eyebrow">Neuropsych evaluations</span>
+            <strong className="brand-wordmark">synaptec</strong>
           </span>
         </Link>
         <div className="header-actions">
+          {context ? (
+            <TakeAssessmentCta size="sm" className="header-cta" />
+          ) : (
+            <TakeAssessmentCta size="sm" className="header-cta" href="/#waitlist" label="Join the Waitlist" />
+          )}
           <nav aria-label="Primary navigation">
             <ul className="nav-list">
               {navItems.map((item) => (
@@ -49,7 +54,7 @@ export async function AppShell({ children, active }: AppShellProps) {
             <div className="account-menu">
               <span className="account-copy">
                 <strong>{context.user.fullName}</strong>
-                <small>{formatRole(context.roles[0])}</small>
+                <small>{roleLabel(context.roles[0])}</small>
               </span>
               <form action={signOut}>
                 <button className="nav-link nav-button" type="submit">
@@ -103,9 +108,4 @@ function navigationForRoles(roles: Role[]) {
   }
 
   return items;
-}
-
-function formatRole(role?: Role) {
-  if (!role) return "Signed in";
-  return role.replace("psychu_", "").replaceAll("_", " ");
 }

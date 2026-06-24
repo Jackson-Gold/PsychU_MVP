@@ -1,12 +1,12 @@
-# PsychU MVP Demo Logins
+# Synaptec MVP Demo Logins
 
 These accounts are created by `supabase/seed.sql` after all migrations have been applied.
 
 | Role | Email | Password | Landing page |
 | --- | --- | --- | --- |
 | Student | `student@example.com` | `PsychU-Demo-2026!` | `/student` |
-| Clinician | `clinician@example.com` | `PsychU-Demo-2026!` | `/clinician/queue` |
-| PsychU admin | `admin@example.com` | `PsychU-Demo-2026!` | `/admin/forms` |
+| Neuropsychologist | `clinician@example.com` | `PsychU-Demo-2026!` | `/clinician/queue` |
+| Synaptec admin | `admin@example.com` | `PsychU-Demo-2026!` | `/admin/forms` |
 | University staff | `staff@example.com` | `PsychU-Demo-2026!` | `/university/shared-packets` |
 | University admin | `university@example.com` | `PsychU-Demo-2026!` | `/university/invites` |
 

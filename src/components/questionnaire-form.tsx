@@ -28,7 +28,7 @@ type QuestionnaireFormProps = {
 
 const initialState: QuestionnaireSubmissionState = {
   status: "idle",
-  message: "Your answers are private and are shared only with authorized PsychU reviewers."
+  message: "Your answers are private and are shared only with authorized Synaptec reviewers."
 };
 
 const scale03Labels = ["Not at all", "Several days", "More than half the days", "Nearly every day"];
@@ -75,7 +75,7 @@ export function QuestionnaireForm({ caseId, modules, responses, pendingConsents 
 
       <div className="notice-inline">
         These questionnaires support screening and clinician review. They do not provide a diagnosis or live
-        emergency monitoring. Named instruments remain subject to PsychU&apos;s final permitted-use review.
+        emergency monitoring. Named instruments remain subject to Synaptec&apos;s final permitted-use review.
       </div>
 
       {modules.length ? (
@@ -99,7 +99,7 @@ export function QuestionnaireForm({ caseId, modules, responses, pendingConsents 
         <div className="empty-state">
           <strong>No questionnaires are available yet</strong>
           <span>
-            Ask a PsychU administrator to publish the questionnaire catalog (Admin &rarr; Questionnaires &rarr; Sync),
+            Ask a Synaptec administrator to publish the questionnaire catalog (Admin &rarr; Questionnaires &rarr; Sync),
             then refresh this page.
           </span>
         </div>
@@ -227,7 +227,7 @@ function QuestionnaireModuleForm({
             <strong>Immediate support is available.</strong>
             <p>{crisisResourceCopy}</p>
             <p>
-              Your response will also be prominently flagged for your assigned clinician. PsychU is not a live
+              Your response will also be prominently flagged for your assigned clinician. Synaptec is not a live
               crisis response service.
             </p>
           </div>

@@ -1,22 +1,52 @@
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
-import { demoAssessmentModules, demoOrganizations } from "@/lib/demo-data";
+import { WaitlistForm } from "@/components/waitlist-form";
 
-const credibilityChips = [
-  "FERPA-first architecture",
-  "Postgres row-level security",
-  "Immutable audit logs",
-  "PHQ-9 & GAD-7 scoring",
-  "988-aware safety flags",
-  "Student-controlled release"
+const heroPills = ["15-day evaluation", "100% virtual", "Clinician-signed", "Launching Fall 2026"];
+
+const problemStats = [
+  { value: "5–18 mo", label: "Typical waitlist", detail: "Students lose an entire semester — or longer — before a single test is run." },
+  { value: "$4,500", label: "Average cost", detail: "Price barriers put evaluations out of reach for thousands of students." },
+  { value: "$30k+", label: "Tuition at risk", detail: "Missing an accommodation deadline can delay a degree and career by a year." },
+  { value: "<6,000", label: "Neuropsychologists in the U.S.", detail: "A shrinking pool against 2M+ students who need an evaluation." }
 ];
 
-const capabilities = ["Screen", "Triage", "Approve", "Share"];
+const howItWorks = [
+  {
+    title: "Virtual testing",
+    detail:
+      "Complete your standardized testing battery remotely, proctored live by a trained psychometrist. No traveling to far-off clinics."
+  },
+  {
+    title: "AI-assisted scribing",
+    detail: "Our secure, clinical-grade AI drafts the massive, structured diagnostic report instantly."
+  },
+  {
+    title: "Licensed neuropsychologist sign-off",
+    detail:
+      "A doctoral-level, licensed neuropsychologist reviews the data, makes the diagnosis, and signs your report — 100% compliant with university and testing-board (MCAT, LSAT) standards."
+  }
+];
+
+const coFounders = [
+  {
+    name: "Elizabeth Amador",
+    role: "Co-Founder & CEO",
+    bio: "Strategic ops and mental-health innovator (Northwestern MBA / MA in Psychology)."
+  },
+  {
+    name: "Richard Keeling, MD",
+    role: "Co-Founder & VP, Institutional Relationships",
+    bio: "30+ years advising U.S. universities on student health and disability resources."
+  },
+  {
+    name: "Jodi Gold, MD",
+    role: "Co-Founder & Chief Clinical Officer",
+    bio: "Nationally recognized, board-certified child and adolescent psychiatrist."
+  }
+];
 
 export default function HomePage() {
-  const universityCount = demoOrganizations.filter((org) => org.type === "university").length;
-  const screenerCount = demoAssessmentModules.length;
-
   return (
     <AppShell active="/">
       <section className="landing-hero" aria-labelledby="landing-title">
@@ -24,30 +54,31 @@ export default function HomePage() {
         <div className="landing-hero-copy">
           <span className="hero-chip">
             <span className="hero-chip-dot" aria-hidden="true" />
-            Accessibility screening, modernized
+            In development · Launching Fall 2026
           </span>
           <h1 id="landing-title">
-            The modern standard for student <span className="hero-accent">accessibility screening</span>
+            The waitlist for neuropsych testing is 6 months. We&apos;re launching a way to do it in{" "}
+            <span className="hero-accent">15 days</span>.
           </h1>
           <p className="hero-lede">
-            PsychU turns scattered intake paperwork into a secure, clinician-governed pipeline: safety-aware
-            screening, human triage with advisory AI, and student-controlled release to university teams.
+            Synaptec is the first end-to-end virtual telehealth platform built specifically to solve the student
+            accommodation crisis. Same clinical gold standard. 90% less wait time.
           </p>
           <div className="hero-actions">
-            <Link className="button button-glow" href="/student">
-              Start student flow
+            <Link className="button button-glow button-lg" href="#waitlist">
+              Join the Priority Waitlist
             </Link>
-            <Link className="button button-ghost" href="/clinician/queue">
-              Open review queue
+            <Link className="button button-ghost button-lg" href="#how">
+              See how it works
             </Link>
           </div>
-          <ul className="hero-pills" aria-label="Platform capabilities">
-            {capabilities.map((capability, index) => (
-              <li key={capability}>
+          <ul className="hero-pills" aria-label="What to expect">
+            {heroPills.map((pill, index) => (
+              <li key={pill}>
                 <span className="hero-pill-index" aria-hidden="true">
                   {String(index + 1).padStart(2, "0")}
                 </span>
-                {capability}
+                {pill}
               </li>
             ))}
           </ul>
@@ -74,129 +105,109 @@ export default function HomePage() {
               <span className="prism-shard" />
               <span className="prism-shard" />
             </div>
-            <span className="hero-node hero-node-1">Screening</span>
-            <span className="hero-node hero-node-2">Clinician</span>
-            <span className="hero-node hero-node-3">Packet</span>
+            <span className="hero-node hero-node-1">Virtual testing</span>
+            <span className="hero-node hero-node-2">AI scribe</span>
+            <span className="hero-node hero-node-3">NP sign-off</span>
           </div>
         </div>
       </section>
 
-      <section className="trust-strip" aria-label="Engineering principles">
-        <p className="trust-label">Engineered for trust</p>
-        <ul>
-          {credibilityChips.map((chip) => (
-            <li key={chip}>{chip}</li>
+      <section id="waitlist" className="panel waitlist-panel" aria-labelledby="waitlist-title">
+        <div className="waitlist-copy">
+          <p className="eyebrow">Early access</p>
+          <h2 id="waitlist-title">Join the waitlist to secure priority booking &amp; save your semester</h2>
+          <p className="section-intro">
+            Traditional waitlists will delay your accommodations. Secure your spot in our limited launch cohort today.
+          </p>
+        </div>
+        <WaitlistForm />
+      </section>
+
+      <section id="why" aria-labelledby="why-title">
+        <div className="section-head">
+          <p className="eyebrow">Why we&apos;re building this</p>
+          <h2 id="why-title">The system is broken. Students are paying the price.</h2>
+          <p>
+            Over 2 million higher-ed students need a neuropsychological evaluation to unlock the accommodations — like
+            extended testing time or quiet rooms — they are legally entitled to. With fewer than 6,000
+            neuropsychologists in the U.S., the bottlenecks are devastating.
+          </p>
+        </div>
+        <div className="stat-grid">
+          {problemStats.map((stat) => (
+            <article className="stat-card" key={stat.label}>
+              <span className="stat-value">{stat.value}</span>
+              <span className="stat-label">{stat.label}</span>
+              <span className="stat-detail">{stat.detail}</span>
+            </article>
           ))}
-        </ul>
-      </section>
-
-      <section className="feature-grid" aria-labelledby="capabilities-title">
-        <h2 id="capabilities-title" className="sr-only">
-          Platform capabilities
-        </h2>
-        <article className="feature-card">
-          <span className="feature-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">
-              <path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7l8-4z" strokeLinejoin="round" />
-              <path d="M9 12l2 2 4-4" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </span>
-          <h3>Safety-aware screening</h3>
-          <p>
-            Adaptive, frictionless questionnaires score PHQ-9 and GAD-7 deterministically and raise 988-aware
-            safety flags the instant a critical item is endorsed.
-          </p>
-        </article>
-        <article className="feature-card">
-          <span className="feature-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">
-              <circle cx="12" cy="8" r="3.2" />
-              <path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6" strokeLinecap="round" />
-            </svg>
-          </span>
-          <h3>Human triage, advisory AI</h3>
-          <p>
-            Clinicians review scores, documents, and deterministic flags alongside an advisory AI suggestion that
-            never acts on its own. Every decision stays human-led.
-          </p>
-        </article>
-        <article className="feature-card">
-          <span className="feature-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">
-              <rect x="4" y="4" width="16" height="16" rx="4" />
-              <path d="M8 12l2.5 2.5L16 9" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </span>
-          <h3>Student-controlled release</h3>
-          <p>
-            A reviewed triage packet is released only when the student approves it — through the secure portal,
-            revocable at any time, with every share written to the audit trail.
-          </p>
-        </article>
-      </section>
-
-      <section className="panel platform-panel" aria-labelledby="pipeline-title">
-        <div className="panel-header">
-          <div>
-            <p className="eyebrow">End-to-end pipeline</p>
-            <h2 id="pipeline-title">From first questionnaire to a packet they control</h2>
-            <p className="section-intro">
-              A launchable path designed for the first cohort of pilot schools — secure by default at every hop.
+        </div>
+        <div className="cta-banner" aria-label="How Synaptec fixes it">
+          <div className="cta-banner-copy">
+            <h2>Synaptec is fixing this.</h2>
+            <p>
+              By automating clinical paperwork and using remote, psychometrist-led testing, we reduce the doctor&apos;s
+              time per evaluation from 10 hours to 2 — increasing clinical throughput by 8× and taking wait times down
+              from months to just 15 days.
             </p>
           </div>
+          <Link className="button button-glow button-lg" href="#waitlist">
+            Join the Priority Waitlist
+          </Link>
+        </div>
+      </section>
+
+      <section id="how" aria-labelledby="how-title">
+        <div className="section-head">
+          <p className="eyebrow">How it works (when we launch)</p>
+          <h2 id="how-title">Same clinical standard. 8× faster.</h2>
         </div>
         <ol className="pipeline">
-          <li>
-            <span className="pipeline-index">01</span>
-            <div>
-              <strong>Student intake &amp; screening</strong>
-              <span>Invite, consent, profile, document upload, and safety-aware neuropsych screening.</span>
-            </div>
-          </li>
-          <li>
-            <span className="pipeline-index">02</span>
-            <div>
-              <strong>PsychU clinician review</strong>
-              <span>Scores, files, deterministic flags, and advisory AI triage before any approval.</span>
-            </div>
-          </li>
-          <li>
-            <span className="pipeline-index">03</span>
-            <div>
-              <strong>Student-controlled sharing</strong>
-              <span>The reviewed packet reaches university teams only when the student releases it.</span>
-            </div>
-          </li>
+          {howItWorks.map((step, index) => (
+            <li key={step.title}>
+              <span className="pipeline-index">{String(index + 1).padStart(2, "0")}</span>
+              <div>
+                <strong>{step.title}</strong>
+                <span>{step.detail}</span>
+              </div>
+            </li>
+          ))}
         </ol>
       </section>
 
-      <section className="platform-grid" aria-labelledby="explore-title">
-        <h2 id="explore-title" className="sr-only">
-          Explore the platform
-        </h2>
-        <Link className="platform-tile" href="/student">
-          <span className="platform-tile-meta">Students</span>
-          <strong>Complete screening</strong>
-          <span className="platform-tile-copy">Frictionless, mobile-first questionnaires with instant scoring.</span>
-          <span className="platform-tile-go" aria-hidden="true">→</span>
-        </Link>
-        <Link className="platform-tile" href="/clinician/queue">
-          <span className="platform-tile-meta">Clinicians</span>
-          <strong>Review queue</strong>
-          <span className="platform-tile-copy">Triage assigned cases with scores, flags, and advisory AI.</span>
-          <span className="platform-tile-go" aria-hidden="true">→</span>
-        </Link>
-        <Link className="platform-tile" href="/university/shared-packets">
-          <span className="platform-tile-meta">Universities</span>
-          <strong>Shared packets</strong>
-          <span className="platform-tile-copy">Receive only what {universityCount}+ pilot students choose to release.</span>
-          <span className="platform-tile-go" aria-hidden="true">→</span>
-        </Link>
-        <Link className="platform-tile" href="/admin/forms">
-          <span className="platform-tile-meta">PsychU admin</span>
-          <strong>Control center</strong>
-          <span className="platform-tile-copy">Manage {screenerCount} screeners, roles, cases, and audit trail.</span>
-          <span className="platform-tile-go" aria-hidden="true">→</span>
+      <section id="team" aria-labelledby="team-title">
+        <div className="section-head">
+          <p className="eyebrow">Trusted clinical leadership</p>
+          <h2 id="team-title">Our co-founders</h2>
+        </div>
+        <div className="cofounder-grid">
+          {coFounders.map((person) => (
+            <article className="cofounder-card" key={person.name}>
+              <span className="cofounder-avatar" aria-hidden="true">
+                {person.name
+                  .split(" ")
+                  .slice(0, 2)
+                  .map((part) => part[0])
+                  .join("")}
+              </span>
+              <h3>{person.name}</h3>
+              <p className="cofounder-role">{person.role}</p>
+              <p className="cofounder-bio">{person.bio}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="cta-banner cta-banner-final" aria-labelledby="final-cta-title">
+        <div className="cta-banner-copy">
+          <h2 id="final-cta-title">Be the first in line when we launch.</h2>
+          <p>
+            Are you an investor? Help us accelerate our launch — contact Elizabeth Amador at{" "}
+            <a href="mailto:eamador@getsynaptec.com">eamador@getsynaptec.com</a>.
+          </p>
+        </div>
+        <Link className="button button-glow button-lg" href="#waitlist">
+          Join the Priority Waitlist
         </Link>
       </section>
     </AppShell>

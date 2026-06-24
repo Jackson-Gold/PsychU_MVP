@@ -470,7 +470,7 @@ export default async function AdminFormsPage() {
       <section className="panel" aria-labelledby="admin-title">
         <div className="panel-header">
           <div>
-            <p className="eyebrow">PsychU Admin</p>
+            <p className="eyebrow">Synaptec Admin</p>
             <h1 id="admin-title">MVP control center</h1>
             <p className="section-intro">
               Select a section below to manage it. Every save creates an audit event. Audit logs are read-only.

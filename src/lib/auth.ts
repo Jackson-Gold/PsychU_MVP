@@ -48,7 +48,7 @@ export const getAuthContext = cache(async (): Promise<AuthContext | null> => {
         profile?.full_name ||
         String(user.user_metadata?.full_name ?? "") ||
         user.email?.split("@")[0] ||
-        "PsychU user",
+        "Synaptec user",
       createdAt: user.created_at
     },
     memberships: mappedMemberships,

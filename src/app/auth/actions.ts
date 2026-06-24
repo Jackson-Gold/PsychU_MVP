@@ -62,7 +62,7 @@ export async function signInWithPassword(
     await supabase.auth.signOut();
     return {
       status: "error",
-      message: "This account does not have a PsychU role. Contact an administrator."
+      message: "This account does not have a Synaptec role. Contact an administrator."
     };
   }
 
@@ -86,7 +86,7 @@ export async function sendMagicLink(
   if (!email.success) {
     return {
       status: "error",
-      message: "Enter a valid university or PsychU email address."
+      message: "Enter a valid university or Synaptec email address."
     };
   }
 
@@ -108,12 +108,12 @@ export async function sendMagicLink(
   if (error) {
     return {
       status: "error",
-      message: "We could not send a magic link. Check the invite status or contact PsychU support."
+      message: "We could not send a magic link. Check the invite status or contact Synaptec support."
     };
   }
 
   return {
     status: "success",
-    message: "Check your email for a secure PsychU sign-in link."
+    message: "Check your email for a secure Synaptec sign-in link."
   };
 }
